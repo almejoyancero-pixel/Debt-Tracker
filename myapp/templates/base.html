@@ -406,23 +406,23 @@
             {% if user.is_authenticated %}
                 {% if user.is_superuser %}
                     <a class="navbar-brand" href="{% url 'myapp:admin_dashboard' %}">
-                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Logo" class="logo me-2">
                         DEBT TRACKER SYSTEM
                     </a>
                 {% elif user.account_type == 'creditor' %}
                     <a class="navbar-brand" href="{% url 'myapp:creditor_dashboard' %}">
-                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Logo" class="logo me-2">
                         DEBT TRACKER SYSTEM
                     </a>
                 {% else %}
                     <a class="navbar-brand" href="{% url 'myapp:debtor_dashboard' %}">
-                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Logo" class="logo me-2">
                         DEBT TRACKER SYSTEM
                     </a>
                 {% endif %}
             {% else %}
                 <a class="navbar-brand" href="{% url 'myapp:home' %}">
-                    <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                    <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Logo" class="logo me-2">
                     DEBT TRACKER SYSTEM
                 </a>
             {% endif %}
