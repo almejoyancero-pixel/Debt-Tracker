@@ -22,6 +22,7 @@ urlpatterns = [
     # HOME & AUTHENTICATION
     # ========================================
     path('', views.home_view, name='home'),
+    path('googlea318f19596005dc2.html', views.google_verify, name='google_verify'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),

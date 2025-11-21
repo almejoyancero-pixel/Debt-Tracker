@@ -63,6 +63,14 @@ def home_view(request):
     return render(request, 'index.html')
 
 
+def google_verify(request):
+    """Plain-text response for Google Search Console verification."""
+    return HttpResponse(
+        "google-site-verification: googlea318f19596005dc2.html",
+        content_type="text/plain",
+    )
+
+
 def register_view(request):
     if request.user.is_authenticated:
         # Redirect directly to appropriate dashboard based on user type
