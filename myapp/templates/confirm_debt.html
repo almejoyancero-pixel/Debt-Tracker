@@ -1,0 +1,142 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Confirm Debt - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-lg">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-check-circle"></i> Confirm Debt & Upload Proof</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>Store Owner:</strong> Before confirming this debt, you must upload proof that the item/money has already been given to the debtor.
+                </div>
+
+                <!-- Debt Details Section -->
+                <h5 class="mb-3"><i class="bi bi-file-text"></i> Debt Details</h5>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Debtor:</strong>
+                        <p class="mb-0">{{ debt.debtor.full_name }}</p>
+                        <small class="text-muted">@{{ debt.debtor.username }}</small>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Debt Type:</strong>
+                        <p class="mb-0">
+                            {% if debt.type == 'money' %}
+                                <span class="badge bg-success">Money</span>
+                            {% else %}
+                                <span class="badge bg-info">Product</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Amount:</strong>
+                        <p class="mb-0"><h3 class="text-primary">₱{{ debt.amount|floatformat:2 }}</h3></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Product/Item:</strong>
+                        <p class="mb-0">{{ debt.product_name|default:"N/A" }}</p>
+                    </div>
+                </div>
+
+                {% if debt.description %}
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p class="mb-0">{{ debt.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Debtor's Proof (if uploaded) -->
+                {% if debt.debt_proof %}
+                <div class="mb-3">
+                    <strong>Debtor's Proof:</strong>
+                    <div class="mt-2">
+                        {% if debt.debt_proof.url|slice:"-4:" == ".pdf" or debt.debt_proof.url|slice:"-4:" == ".PDF" %}
+                            <a href="{{ debt.debt_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-pdf"></i> View Debtor's Proof (PDF)
+                            </a>
+                        {% else %}
+                            <a href="{{ debt.debt_proof.url }}" target="_blank">
+                                <img src="{{ debt.debt_proof.url }}" alt="Debtor Proof" class="img-thumbnail" style="max-width: 200px;">
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <hr class="my-4">
+
+                <!-- Proof Upload Form -->
+                <h5 class="mb-3 text-danger"><i class="bi bi-upload"></i> Upload Proof of Given Item/Money (Required)</h5>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="creditor_proof" class="form-label fw-bold">
+                            <i class="bi bi-file-earmark-image"></i> Proof that Item/Money was Given <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="creditor_proof" 
+                               name="creditor_proof" 
+                               accept="image/*,.pdf"
+                               required>
+                        <div class="form-text">
+                            Upload proof (receipt, delivery photo, transfer screenshot, etc.) showing that you already gave the item/money to the debtor.
+                            Supported formats: JPG, PNG, GIF, PDF. Max size: 10MB.
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>Important:</strong> This proof is required before you can confirm the debt. 
+                        It serves as evidence that the transaction has occurred and protects both parties.
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{% url 'myapp:notifications' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'myapp:reject_debt' debt.id %}" 
+                               class="btn btn-danger"
+                               onclick="return confirm('Are you sure you want to reject this debt?')">
+                                <i class="bi bi-x-circle"></i> Reject Debt
+                            </a>
+                            
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Upload Proof & Confirm Debt
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="bi bi-lightbulb"></i> Why Upload Proof?</h5>
+                <ul class="mb-0">
+                    <li><strong>Protection:</strong> Proof protects you from disputes about whether the item/money was given.</li>
+                    <li><strong>Transparency:</strong> Both you and the debtor can view the proof anytime.</li>
+                    <li><strong>Record Keeping:</strong> Maintains a clear audit trail of all transactions.</li>
+                    <li><strong>Trust:</strong> Builds trust between creditor and debtor.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

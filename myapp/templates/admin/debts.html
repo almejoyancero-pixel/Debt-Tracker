@@ -1,0 +1,314 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Debts - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-debts {
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .debt-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .debt-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending_confirmation {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-awaiting_confirmation {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-paid {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .type-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .type-money {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .type-product {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .search-box {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .stats-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        flex: 1;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .amount {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .balance {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .user-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .user-link:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-row {
+            flex-direction: column;
+        }
+        
+        .debt-card {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-debts">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-file-text"></i> Debt Management</h1>
+        <div class="subtitle">View and manage all debt records in the system</div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ debts.count }}</div>
+            <div class="stat-label">Total Debts</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">₱{{ total_amount|floatformat:2 }}</div>
+            <div class="stat-label">Total Value</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">₱{{ total_paid|floatformat:2 }}</div>
+            <div class="stat-label">Total Paid</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">₱{{ total_balance|floatformat:2 }}</div>
+            <div class="stat-label">Remaining Balance</div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="search-box">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search debts by creditor, debtor, item...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterStatus">
+                    <option value="">All Status</option>
+                    <option value="pending_confirmation">Pending Confirmation</option>
+                    <option value="active">Active</option>
+                    <option value="awaiting_confirmation">Awaiting Confirmation</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterType">
+                    <option value="">All Types</option>
+                    <option value="money">Money</option>
+                    <option value="product">Product</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Debts List -->
+    <div class="debts-list" id="debtsList">
+        {% for debt in debts %}
+        <div class="debt-card" 
+             data-search-text="{{ debt.creditor.full_name|default:debt.creditor.username|lower }} {{ debt.debtor.full_name|default:debt.debtor.username|lower }} {{ debt.product_name|default:''|lower }}"
+             data-status="{{ debt.status }}"
+             data-type="{{ debt.type }}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h5 class="mb-0">
+                            {% if debt.type == 'product' %}
+                                {{ debt.product_name }}
+                            {% else %}
+                                ₱{{ debt.amount }}
+                            {% endif %}
+                        </h5>
+                        <span class="status-badge status-{{ debt.status }}">
+                            {{ debt.get_status_display }}
+                        </span>
+                        <span class="type-badge type-{{ debt.type }}">
+                            {{ debt.get_type_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="row text-muted small mb-2">
+                        <div class="col-md-6">
+                            <i class="bi bi-arrow-up-circle"></i> 
+                            Creditor: <a href="{% url 'myapp:admin_user_detail' debt.creditor.id %}" class="user-link">{{ debt.creditor.full_name|default:debt.creditor.username }}</a>
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-arrow-down-circle"></i> 
+                            Debtor: <a href="{% url 'myapp:admin_user_detail' debt.debtor.id %}" class="user-link">{{ debt.debtor.full_name|default:debt.debtor.username }}</a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar"></i> Created: {{ debt.date_created|date:"M d, Y H:i" }}
+                        {% if debt.due_date %}
+                            • <i class="bi bi-clock"></i> Due: {{ debt.due_date|date:"M d, Y" }}
+                        {% endif %}
+                    </div>
+                    
+                    {% if debt.notes %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-chat-left-text"></i> {{ debt.notes|truncatewords:10 }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4 text-end">
+                    <div class="amount">₱{{ debt.amount }}</div>
+                    <div class="balance">Balance: ₱{{ debt.balance }}</div>
+                    <div class="mt-2">
+                        <a href="{% url 'myapp:admin_debt_detail' debt.id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-file-text fs-1 text-muted"></i>
+            <h4 class="mt-3 text-muted">No debts found</h4>
+            <p class="text-muted">There are no debt records in the system yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterType = document.getElementById('filterType');
+    const debtsList = document.getElementById('debtsList');
+    const debtCards = debtsList.querySelectorAll('.debt-card');
+    
+    function filterDebts() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusFilter = filterStatus.value;
+        const typeFilter = filterType.value;
+        
+        debtCards.forEach(card => {
+            const searchText = card.dataset.searchText;
+            const status = card.dataset.status;
+            const type = card.dataset.type;
+            
+            let matchesSearch = searchText.includes(searchTerm);
+            let matchesStatus = !statusFilter || status === statusFilter;
+            let matchesType = !typeFilter || type === typeFilter;
+            
+            card.style.display = matchesSearch && matchesStatus && matchesType ? 'block' : 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', filterDebts);
+    filterStatus.addEventListener('change', filterDebts);
+    filterType.addEventListener('change', filterDebts);
+});
+</script>
+{% endblock %}

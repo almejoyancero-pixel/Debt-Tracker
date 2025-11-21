@@ -1,0 +1,314 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Users - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-users {
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, #00357a 0%, #00357a 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .admin-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    .admin-header .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+    
+    .users-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .section-title i {
+        font-size: 1.8rem;
+    }
+    
+    .creditors-section .section-title i {
+        color: #d946ef;
+    }
+    
+    .debtors-section .section-title i {
+        color: #10b981;
+    }
+    
+    .user-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .user-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+    
+    .user-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .user-avatar-placeholder {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .debtors-section .user-avatar-placeholder {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .user-info h5 {
+        margin: 0 0 3px 0;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .user-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+    
+    .user-details {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .user-details strong {
+        color: #1f2937;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    
+    .detail-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .detail-label {
+        color: #6b7280;
+    }
+    
+    .detail-value {
+        color: #1f2937;
+        font-weight: 600;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-buttons .btn {
+        flex: 1;
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state h4 {
+        color: #6b7280;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: #9ca3af;
+    }
+    
+    @media (max-width: 1200px) {
+        .users-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-users">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-people-fill"></i> User Management</h1>
+        <div class="subtitle">Creditors & Debtors Overview</div>
+    </div>
+    
+    <!-- Creditors and Debtors Split View -->
+    <div class="users-container">
+        <!-- Creditors Section -->
+        <div class="creditors-section">
+            <div class="section-title">
+                <i class="bi bi-person-check-fill"></i>
+                Creditors ({{ creditors.count }})
+            </div>
+            
+            <div class="creditors-list">
+                {% for creditor in creditors %}
+                <div class="user-card">
+                    <div class="user-header">
+                        {% if creditor.profile_picture %}
+                            <img src="{{ creditor.profile_picture.url }}" alt="{{ creditor.full_name }}" class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">
+                                {{ creditor.full_name.0|default:creditor.username.0|default:"C"|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="user-info">
+                            <h5>{{ creditor.full_name|default:creditor.username }}</h5>
+                            <p><i class="bi bi-at"></i> {{ creditor.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="user-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ creditor.email|default:"N/A" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Joined:</span>
+                            <span class="detail-value">{{ creditor.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Loaned:</span>
+                            <span class="detail-value">₱{{ creditor.total_loaned|default:0|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="{% url 'myapp:admin_user_detail' creditor.id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-person-check"></i>
+                    <h4>No Creditors</h4>
+                    <p>There are no creditors in the system yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Debtors Section -->
+        <div class="debtors-section">
+            <div class="section-title">
+                <i class="bi bi-person-x-fill"></i>
+                Debtors ({{ debtors.count }})
+            </div>
+            
+            <div class="debtors-list">
+                {% for debtor in debtors %}
+                <div class="user-card">
+                    <div class="user-header">
+                        {% if debtor.profile_picture %}
+                            <img src="{{ debtor.profile_picture.url }}" alt="{{ debtor.full_name }}" class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">
+                                {{ debtor.full_name.0|default:debtor.username.0|default:"D"|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="user-info">
+                            <h5>{{ debtor.full_name|default:debtor.username }}</h5>
+                            <p><i class="bi bi-at"></i> {{ debtor.username }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="user-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ debtor.email|default:"N/A" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Joined:</span>
+                            <span class="detail-value">{{ debtor.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Owed:</span>
+                            <span class="detail-value">₱{{ debtor.total_owed|default:0|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="{% url 'myapp:admin_user_detail' debtor.id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-person-x"></i>
+                    <h4>No Debtors</h4>
+                    <p>There are no debtors in the system yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

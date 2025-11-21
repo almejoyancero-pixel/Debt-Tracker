@@ -1,0 +1,373 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Activity Log - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-activity {
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .activity-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .activity-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .action-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .action-login {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .action-view_users {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .action-view_user_detail {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .action-view_debts {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .action-view_debt_detail {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-view_payments {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .action-approve_payment {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .action-reject_payment {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .action-view_activity {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .search-box {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .stats-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        flex: 1;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .user-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .user-link:hover {
+        text-decoration: underline;
+    }
+    
+    .timestamp {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .description {
+        color: #495057;
+        margin-top: 5px;
+    }
+    
+    .activity-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-row {
+            flex-direction: column;
+        }
+        
+        .activity-card {
+            padding: 15px;
+        }
+        
+        .activity-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-activity">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-clock-history"></i> Admin Activity Log</h1>
+        <div class="subtitle">Track all admin actions and system events</div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ activities.count }}</div>
+            <div class="stat-label">Total Activities</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ today_count }}</div>
+            <div class="stat-label">Today's Activities</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ unique_admins }}</div>
+            <div class="stat-label">Active Admins</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ recent_count }}</div>
+            <div class="stat-label">Last 24 Hours</div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="search-box">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search activities by user, description...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterAction">
+                    <option value="">All Actions</option>
+                    <option value="login">Admin Login</option>
+                    <option value="view_users">View Users List</option>
+                    <option value="view_user_detail">View User Detail</option>
+                    <option value="view_debts">View Debts List</option>
+                    <option value="view_debt_detail">View Debt Detail</option>
+                    <option value="view_payments">View Payments List</option>
+                    <option value="approve_payment">Approve Payment</option>
+                    <option value="reject_payment">Reject Payment</option>
+                    <option value="view_activity">View Activity Log</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterDate">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activities List -->
+    <div class="activities-list" id="activitiesList">
+        {% for activity in activities %}
+        <div class="activity-card" 
+             data-search-text="{{ activity.user.username|lower }} {{ activity.user.full_name|default:''|lower }} {{ activity.description|lower }}"
+             data-action="{{ activity.action }}"
+             data-date="{{ activity.timestamp|date:'Y-m-d' }}">
+            <div class="row align-items-start">
+                <div class="col-auto">
+                    <div class="user-avatar-placeholder" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                        {{ activity.user.full_name.0|default:activity.user.username.0|default:"?"|upper }}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h6 class="mb-0">
+                            <a href="{% url 'myapp:admin_user_detail' activity.user.id %}" class="user-link">
+                                {{ activity.user.full_name|default:activity.user.username }}
+                            </a>
+                        </h6>
+                        <span class="action-badge action-{{ activity.action }}">
+                            {{ activity.get_action_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="description">{{ activity.description }}</div>
+                    
+                    <div class="activity-meta">
+                        <div class="timestamp">
+                            <i class="bi bi-calendar"></i> {{ activity.timestamp|date:"F d, Y H:i:s" }}
+                        </div>
+                        {% if activity.ip_address %}
+                        <div>
+                            <i class="bi bi-geo-alt"></i> {{ activity.ip_address }}
+                        </div>
+                        {% endif %}
+                        {% if activity.related_id %}
+                        <div>
+                            <i class="bi bi-hash"></i> ID: {{ activity.related_id }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-clock-history fs-1 text-muted"></i>
+            <h4 class="mt-3 text-muted">No activities found</h4>
+            <p class="text-muted">There are no admin activities logged yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Activity pagination">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Previous</a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const filterAction = document.getElementById('filterAction');
+    const filterDate = document.getElementById('filterDate');
+    const activitiesList = document.getElementById('activitiesList');
+    const activityCards = activitiesList.querySelectorAll('.activity-card');
+    
+    function filterActivities() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const actionFilter = filterAction.value;
+        const dateFilter = filterDate.value;
+        const today = new Date().toISOString().split('T')[0];
+        
+        activityCards.forEach(card => {
+            const searchText = card.dataset.searchText;
+            const action = card.dataset.action;
+            const activityDate = card.dataset.date;
+            
+            let matchesSearch = searchText.includes(searchTerm);
+            let matchesAction = !actionFilter || action === actionFilter;
+            let matchesDate = true;
+            
+            if (dateFilter === 'today') {
+                matchesDate = activityDate === today;
+            } else if (dateFilter === 'yesterday') {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                matchesDate = activityDate === yesterday.toISOString().split('T')[0];
+            } else if (dateFilter === 'week') {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                matchesDate = activityDate >= weekAgo.toISOString().split('T')[0];
+            } else if (dateFilter === 'month') {
+                const monthAgo = new Date();
+                monthAgo.setDate(monthAgo.getDate() - 30);
+                matchesDate = activityDate >= monthAgo.toISOString().split('T')[0];
+            }
+            
+            card.style.display = matchesSearch && matchesAction && matchesDate ? 'block' : 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', filterActivities);
+    filterAction.addEventListener('change', filterActivities);
+    filterDate.addEventListener('change', filterActivities);
+});
+</script>
+{% endblock %}

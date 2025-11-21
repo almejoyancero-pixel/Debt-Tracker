@@ -1,0 +1,835 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Profile - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<style>
+    .profile-container {
+        max-width: 1000px;
+        margin: 3rem auto;
+    }
+    
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        padding: 2.5rem;
+        transition: all 0.3s ease;
+    }
+
+    /* Two-column layout inside profile card */
+    .profile-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .profile-left,
+    .profile-right {
+        flex: 1;
+    }
+
+    @media (min-width: 992px) {
+        .profile-layout {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .profile-left {
+            max-width: 320px;
+        }
+    }
+    
+    .profile-picture-wrapper {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #00357a;
+        box-shadow: 0 4px 12px rgba(0, 53, 122, 0.3);
+    }
+    
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #00357a;
+        margin-top: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .profile-username {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-divider {
+        border: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, #00357a, transparent);
+        margin: 1.5rem 0;
+    }
+    
+    .profile-detail {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .profile-detail:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .profile-detail strong {
+        color: #00357a;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 140px;
+    }
+    
+    .profile-detail span {
+        color: #495057;
+    }
+    
+    .account-type-badge {
+        display: inline-block;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .badge-creditor {
+        background-color: #00357a;
+        color: white;
+    }
+    
+    .badge-debtor {
+        color: white;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .button-group button,
+    .button-group a {
+        flex: 1;
+        padding: 0.85rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+    
+    .btn-edit {
+        background-color: #00357a;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background-color: #004E89;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 53, 122, 0.3);
+        color: white;
+    }
+    
+    .btn-logout {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-logout:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-save {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .btn-save:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+    
+    /* Edit Mode Styles */
+    .edit-mode {
+        display: none;
+    }
+    
+    .form-control, .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .form-control:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #00357a;
+        box-shadow: 0 0 0 0.2rem rgba(0, 53, 122, 0.15);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #00357a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .readonly-field {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+    
+    /* Profile Summary Statistics */
+    .profile-summary-section {
+        margin-top: 1rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e9ecef;
+        display: none;
+        animation: slideDown 0.3s ease;
+    }
+    
+    .profile-summary-section.show {
+        display: block;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #00357a;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0, 53, 122, 0.15);
+        border-color: #00357a;
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-icon.blue { color: #00357a; }
+    .stat-icon.yellow { color: #ffc107; }
+    .stat-icon.red { color: #dc3545; }
+    .stat-icon.green { color: #28a745; }
+    .stat-icon.teal { color: #17a2b8; }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #00357a;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .member-since {
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    /* Toggle Button for Profile Summary */
+    .toggle-summary-btn {
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #00357a 0%, #004E89 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .toggle-summary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 53, 122, 0.3);
+    }
+    
+    .toggle-summary-btn i {
+        transition: transform 0.3s ease;
+    }
+    
+    .toggle-summary-btn.active i {
+        transform: rotate(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <!-- Profile Card -->
+    <div class="profile-card">
+        <!-- View Mode -->
+        <div id="viewMode">
+            <div class="profile-layout">
+                <!-- Left column: profile summary -->
+                <div class="profile-left">
+                    <div class="profile-picture-wrapper">
+                        {% if request.user.profile_picture %}
+                            <img src="{{ request.user.profile_picture.url }}" alt="Profile Picture" class="profile-picture" id="profilePictureDisplay">
+                        {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ request.user.full_name|urlencode }}&size=120&background=00357a&color=fff&bold=true" 
+                                 alt="Profile Picture" class="profile-picture" id="profilePictureDisplay">
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-center">
+                        <h4 class="profile-name">{{ request.user.full_name }}</h4>
+                        <p class="profile-username">@{{ request.user.username }}</p>
+                    </div>
+
+                    <div class="member-since">
+                        <i class="bi bi-calendar-heart"></i>
+                        Member since {{ request.user.date_joined|date:"F d, Y" }}
+                    </div>
+                </div>
+
+                <!-- Right column: detailed info + buttons -->
+                <div class="profile-right">
+                    <hr class="profile-divider">
+
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <strong><i class="bi bi-shield-check"></i> Account Type:</strong>
+                            <span>
+                                {% if request.user.account_type == 'creditor' %}
+                                    <span class="account-type-badge badge-creditor">
+                                        <i class="bi bi-person-badge"></i> Creditor
+                                    </span>
+                                {% else %}
+                                    <span class="account-type-badge badge-debtor">
+                                        <i class="bi bi-person"></i> Debtor
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="profile-detail">
+                            <strong><i class="bi bi-envelope"></i> Email:</strong>
+                            <span>{% if request.user.email %}{{ request.user.email }}{% else %}Not provided{% endif %}</span>
+                        </div>
+
+                        <!-- Toggle Button for Profile Summary Statistics -->
+                        <button type="button" class="toggle-summary-btn" id="toggleSummaryBtn">
+                            <i class="bi bi-graph-up"></i>
+                            <span>View Profile Summary</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-edit" id="editProfileBtn">
+                            <i class="bi bi-pencil-square"></i> Edit Profile
+                        </button>
+                        <button type="button" class="btn-logout" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Summary Statistics (Hidden by default) -->
+            <div class="profile-summary-section" id="profileSummarySection">
+                <h5 class="summary-title">
+                    <i class="bi bi-graph-up"></i> Profile Summary Statistics
+                </h5>
+                
+                <div class="stats-grid">
+                    {% if request.user.account_type == 'creditor' %}
+                        <!-- Creditor Statistics -->
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.total_debtors }}</div>
+                            <div class="stat-label">Total Debtors</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon yellow">
+                                <i class="bi bi-file-text"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.total_debts }}</div>
+                            <div class="stat-label">Debts Created</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.unpaid_debts }}</div>
+                            <div class="stat-label">Unpaid Debts</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.paid_debts }}</div>
+                            <div class="stat-label">Paid Debts</div>
+                        </div>
+                        
+                        <div class="stat-card" style="grid-column: span 2;">
+                            <div class="stat-icon teal">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                            <div class="stat-value">₱{{ stats.total_amount_owed|floatformat:2 }}</div>
+                            <div class="stat-label">Total Unpaid Amount</div>
+                        </div>
+                    {% else %}
+                        <!-- Debtor Statistics -->
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.total_creditors }}</div>
+                            <div class="stat-label">Total Creditors</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon yellow">
+                                <i class="bi bi-file-text"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.total_debts }}</div>
+                            <div class="stat-label">Total Debts</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.unpaid_debts }}</div>
+                            <div class="stat-label">Unpaid Debts</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-value">{{ stats.paid_debts }}</div>
+                            <div class="stat-label">Paid Debts</div>
+                        </div>
+                        
+                        <div class="stat-card" style="grid-column: span 2;">
+                            <div class="stat-icon red">
+                                <i class="bi bi-cash-coin"></i>
+                            </div>
+                            <div class="stat-value">₱{{ stats.total_amount_owed|floatformat:2 }}</div>
+                            <div class="stat-label">Total Amount Owed</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Mode -->
+        <div id="editMode" class="edit-mode">
+            <div class="profile-picture-wrapper">
+                {% if request.user.profile_picture %}
+                    <img src="{{ request.user.profile_picture.url }}" alt="Profile Picture" class="profile-picture" id="profilePictureEdit">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ request.user.full_name|urlencode }}&size=120&background=00357a&color=fff&bold=true" 
+                         alt="Profile Picture" class="profile-picture" id="profilePictureEdit">
+                {% endif %}
+            </div>
+            
+            <div class="text-center mb-4">
+                <h4 class="profile-name">Edit Profile</h4>
+            </div>
+            
+            <hr class="profile-divider">
+            
+            <form method="POST" enctype="multipart/form-data" id="profileEditForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_full_name">
+                        <i class="bi bi-person"></i> Full Name
+                    </label>
+                    <input type="text" name="full_name" id="id_full_name" 
+                           class="form-control" value="{{ request.user.full_name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_username">
+                        <i class="bi bi-person-badge"></i> Username
+                    </label>
+                    <input type="text" name="username" id="id_username" 
+                           class="form-control readonly-field" value="{{ request.user.username }}" readonly>
+                    <small class="text-muted">Username cannot be changed</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_account_type">
+                        <i class="bi bi-shield-check"></i> Account Type
+                    </label>
+                    <input type="text" name="account_type" id="id_account_type" 
+                           class="form-control readonly-field" 
+                           value="{% if request.user.account_type == 'creditor' %}Creditor{% else %}Debtor{% endif %}" readonly>
+                    <small class="text-muted">Account type cannot be changed</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_email">
+                        <i class="bi bi-envelope"></i> Email
+                    </label>
+                    <input type="email" name="email" id="id_email" 
+                           class="form-control" value="{{ request.user.email|default:'' }}" 
+                           placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_profile_picture">
+                        <i class="bi bi-image"></i> Profile Picture (Optional)
+                    </label>
+                    <input type="file" name="profile_picture" id="id_profile_picture" 
+                           class="form-control" accept="image/jpeg,image/jpg,image/png">
+                    <small class="text-muted">Upload a new profile picture (JPG, JPEG, PNG only - Max 5MB)</small>
+                </div>
+                
+                <hr class="profile-divider">
+                
+                <div class="alert alert-info" style="background-color: #e7f3ff; border-color: #b3d9ff;">
+                    <i class="bi bi-info-circle"></i> <strong>Note:</strong> You can update your profile without changing your password. Leave password fields blank if you don't want to change it.
+                </div>
+                
+                <h5 class="text-center mb-3" style="color: #00357a; font-weight: 600;">
+                    <i class="bi bi-lock"></i> Change Password (Optional)
+                </h5>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_old_password">
+                        <i class="bi bi-key"></i> Current Password
+                    </label>
+                    <input type="password" name="old_password" id="id_old_password" 
+                           class="form-control" placeholder="Enter current password"
+                           autocomplete="off">
+                    <small class="text-muted">Leave blank if you don't want to change password</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_new_password">
+                        <i class="bi bi-lock-fill"></i> New Password
+                    </label>
+                    <input type="password" name="new_password" id="id_new_password" 
+                           class="form-control" placeholder="Enter new password"
+                           autocomplete="new-password">
+                    <small class="text-muted">Minimum 8 characters</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="id_confirm_password">
+                        <i class="bi bi-lock-fill"></i> Confirm New Password
+                    </label>
+                    <input type="password" name="confirm_password" id="id_confirm_password" 
+                           class="form-control" placeholder="Confirm new password"
+                           autocomplete="new-password">
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn-cancel" id="cancelEditBtn">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Toggle between View and Edit modes
+    const viewMode = document.getElementById('viewMode');
+    const editMode = document.getElementById('editMode');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const profilePictureInput = document.getElementById('id_profile_picture');
+    
+    // Switch to Edit Mode
+    editProfileBtn.addEventListener('click', function() {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        
+        // Clear password fields to prevent auto-fill issues
+        document.getElementById('id_old_password').value = '';
+        document.getElementById('id_new_password').value = '';
+        document.getElementById('id_confirm_password').value = '';
+    });
+    
+    // Switch back to View Mode
+    cancelEditBtn.addEventListener('click', function() {
+        editMode.style.display = 'none';
+        viewMode.style.display = 'block';
+        // Reset form
+        document.getElementById('profileEditForm').reset();
+    });
+    
+    // Profile Picture Preview
+    if (profilePictureInput) {
+        profilePictureInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File Too Large',
+                        text: 'File size must not exceed 5MB',
+                        confirmButtonColor: '#00357a'
+                    });
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file type (only jpg, jpeg, png)
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid File Type',
+                        text: 'Please upload JPG, JPEG, or PNG image only.',
+                        confirmButtonColor: '#00357a'
+                    });
+                    this.value = '';
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profilePictureEdit').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // AJAX Form Submission
+    const profileEditForm = document.getElementById('profileEditForm');
+    if (profileEditForm) {
+        profileEditForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            Swal.fire({
+                title: 'Updating Profile...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Create FormData
+            const formData = new FormData(this);
+            
+            // Send AJAX request
+            fetch('{% url "myapp:edit_profile" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update profile picture in view mode if changed
+                    if (data.profile_picture_url) {
+                        document.getElementById('profilePictureDisplay').src = data.profile_picture_url;
+                    }
+                    
+                    // Update displayed values
+                    const fullNameInput = document.getElementById('id_full_name');
+                    const emailInput = document.getElementById('id_email');
+                    
+                    if (fullNameInput) {
+                        document.querySelector('.profile-name').textContent = fullNameInput.value;
+                    }
+                    
+                    if (emailInput && emailInput.value) {
+                        const emailDisplay = document.querySelector('.profile-detail span');
+                        if (emailDisplay) {
+                            emailDisplay.textContent = emailInput.value;
+                        }
+                    }
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#00357a',
+                        timer: 2000
+                    }).then(() => {
+                        // Switch back to view mode
+                        editMode.style.display = 'none';
+                        viewMode.style.display = 'block';
+                        
+                        // Reload page to show updated data
+                        window.location.reload();
+                    });
+                } else {
+                    // Show error messages
+                    let errorText = data.errors ? data.errors.join('<br>') : 'An error occurred';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        html: errorText,
+                        confirmButtonColor: '#00357a'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again.',
+                    confirmButtonColor: '#00357a'
+                });
+            });
+        });
+    }
+    
+    // Logout Confirmation with SweetAlert2
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        Swal.fire({
+            title: 'Logout Confirmation',
+            text: 'Are you sure you want to log out?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to logout URL
+                window.location.href = "{% url 'myapp:logout' %}";
+            }
+        });
+    });
+    
+    // Toggle Profile Summary Statistics
+    const toggleSummaryBtn = document.getElementById('toggleSummaryBtn');
+    const profileSummarySection = document.getElementById('profileSummarySection');
+    
+    if (toggleSummaryBtn && profileSummarySection) {
+        toggleSummaryBtn.addEventListener('click', function() {
+            profileSummarySection.classList.toggle('show');
+            toggleSummaryBtn.classList.toggle('active');
+            
+            // Update button text
+            const buttonText = toggleSummaryBtn.querySelector('span');
+            if (profileSummarySection.classList.contains('show')) {
+                buttonText.textContent = 'Hide Profile Summary';
+            } else {
+                buttonText.textContent = 'View Profile Summary';
+            }
+        });
+    }
+</script>
+{% endblock %}

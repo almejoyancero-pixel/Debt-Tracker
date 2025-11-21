@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Proof of Release{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+                    <h2 class="mb-2"><i class="fas fa-upload me-2"></i>Upload Proof of Release</h2>
+                    <p class="mb-0">Confirm that you have given the item/money to the debtor</p>
+                </div>
+            </div>
+
+            <!-- Debt Information Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #667eea;">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Debt Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-user me-2 text-primary"></i>Debtor:</strong>
+                            <p class="mb-0">{{ debt.debtor.full_name }} (@{{ debt.debtor.username }})</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-tag me-2 text-success"></i>Type:</strong>
+                            <p class="mb-0">{{ debt.get_type_display }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-money-bill-wave me-2 text-warning"></i>Amount:</strong>
+                            <p class="mb-0 fs-5 text-success">₱{{ debt.amount }}</p>
+                        </div>
+                        {% if debt.product_name %}
+                        <div class="col-md-6 mb-3">
+                            <strong><i class="fas fa-box me-2 text-info"></i>Product:</strong>
+                            <p class="mb-0">{{ debt.product_name }}</p>
+                        </div>
+                        {% endif %}
+                        {% if debt.description %}
+                        <div class="col-12 mb-3">
+                            <strong><i class="fas fa-align-left me-2 text-secondary"></i>Description:</strong>
+                            <p class="mb-0">{{ debt.description }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #667eea;">
+                    <h5 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>Upload Proof of Release</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important:</strong> Please upload proof (photo, receipt, or document) showing that you have given the item/money to the debtor. This could be:
+                        <ul class="mb-0 mt-2">
+                            <li>Photo of the item being handed over</li>
+                            <li>Screenshot of money transfer</li>
+                            <li>Receipt or acknowledgment document</li>
+                            <li>Any other relevant proof</li>
+                        </ul>
+                        <p class="mb-0">The debt will become <strong>Active</strong> immediately after upload.</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="creditor_proof" class="form-label fw-bold">
+                                <i class="fas fa-paperclip me-2"></i>Proof of Release <span class="text-danger">*</span>
+                            </label>
+                            <input type="file" 
+                                   class="form-control" 
+                                   id="creditor_proof" 
+                                   name="creditor_proof" 
+                                   accept="image/*,.pdf" 
+                                   required>
+                            <small class="text-muted">
+                                <i class="fas fa-file-image me-1"></i>Accepted formats: JPG, PNG, GIF, PDF (Max 10MB)
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Upload Proof & Confirm
+                            </button>
+                            <a href="{% url 'myapp:creditor_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+<style>
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+</style>
+{% endblock %}

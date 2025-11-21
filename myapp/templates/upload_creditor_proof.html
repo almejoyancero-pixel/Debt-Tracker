@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Payment Receipt - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-check-circle"></i> Confirm Payment Receipt</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Action Required:</strong> The debtor has uploaded proof of payment. Please review it and upload your confirmation receipt.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-file-text"></i> Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Debtor:</strong> {{ debt.debtor.full_name }}</p>
+                            <p><strong>Debt ID:</strong> #{{ debt.id }}</p>
+                            <p><strong>Payment Method:</strong> <span class="badge bg-success">Cash</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Payment Amount:</strong></p>
+                            <h3 class="text-primary">₱{{ payment.amount|floatformat:2 }}</h3>
+                            <p class="text-muted small">Transaction ID: {{ payment.transaction_id }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if payment.debtor_proof %}
+                    <hr>
+                    <div class="mt-3">
+                        <h6><i class="bi bi-image"></i> Debtor's Proof of Payment:</h6>
+                        <a href="{{ payment.debtor_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View Proof
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upload Form Card -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload Receipt Confirmation</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.proof_file.id_for_label }}" class="form-label">
+                                Receipt/Confirmation Proof <span class="text-danger">*</span>
+                            </label>
+                            {{ form.proof_file }}
+                            {% if form.proof_file.help_text %}
+                            <div class="form-text">{{ form.proof_file.help_text }}</div>
+                            {% endif %}
+                            {% if form.proof_file.errors %}
+                            <div class="text-danger">{{ form.proof_file.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{% url 'myapp:creditor_dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirm Receipt
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

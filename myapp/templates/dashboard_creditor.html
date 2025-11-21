@@ -1,0 +1,867 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Creditor Dashboard - Debt Tracker{% endblock %}
+{% block page_title %}<i class="bi bi-speedometer2"></i> Creditor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .summary-card {
+        border-left: 4px solid;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+    .summary-card:hover {
+        transform: translateY(-5px);
+    }
+    .summary-card .card-body {
+        min-height: 130px;
+        display: flex;
+        align-items: center;
+    }
+    .debtor-card {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .debt-badge-paid {
+        background-color: #28a745;
+    }
+    .debt-badge-unpaid {
+        background-color: #dc3545;
+    }
+    .debt-badge-pending {
+        background-color: #ffc107;
+        color: #000;
+    }
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: none;
+        z-index: 1000;
+    }
+    .accordion-item {
+        box-sizing: border-box !important;
+        margin: 0 0 8px 0 !important; /* mas maliit pero pantay na gap sa pagitan ng debtor cards */
+        border: 2px solid #dee2e6 !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+        background-color: #ffffff !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .accordion-button {
+        box-sizing: border-box !important;
+        background-color: #ffffff !important;
+        color: var(--text-color) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        padding: 1rem 1.25rem !important;
+        margin: 0 !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        position: relative;
+        width: 100% !important;
+        max-width: 100% !important;
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
+        min-height: 60px !important;
+    }
+    
+    .accordion-button *,
+    .accordion-button *::before,
+    .accordion-button *::after {
+        box-sizing: border-box !important;
+    }
+    
+    .accordion-button.collapsed,
+    .accordion-button:not(.collapsed) {
+        padding: 1rem 1.25rem !important;
+        min-height: 60px !important;
+    }
+    
+    .accordion-button:hover {
+        background-color: #f8f9fa !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .accordion-button:not(.collapsed) {
+        background-color: #e7f3ff !important;
+        color: var(--primary-color) !important;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        z-index: 3;
+    }
+    
+    /* Ensure dropdown arrow is always visible */
+    .accordion-button::after {
+        flex-shrink: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-left: auto;
+        content: "";
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-size: 1.25rem;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .accordion-button:not(.collapsed)::after {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%230d6efd'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        transform: rotate(-180deg);
+    }
+    
+    .accordion-header {
+        box-sizing: border-box !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+        background-color: transparent !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .accordion-collapse {
+        box-sizing: border-box !important;
+        border-top: 1px solid #dee2e6;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .accordion-body {
+        box-sizing: border-box !important;
+        padding: 1.25rem !important;
+        background-color: #ffffff !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Ensure accordion container doesn't overflow */
+    #debtorsAccordion {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+    }
+    
+    /* Ensure consistent inner content layout */
+    .accordion-button > div {
+        box-sizing: border-box !important;
+        min-height: 28px !important;
+        max-width: 100% !important;
+    }
+    
+    .accordion-button > div > div {
+        box-sizing: border-box !important;
+    }
+    
+    .accordion-button .badge {
+        box-sizing: border-box !important;
+        padding: 0.35em 0.65em !important;
+        font-size: 0.875rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Prevent text overflow */
+    .accordion-button strong,
+    .accordion-button span {
+        box-sizing: border-box !important;
+    }
+    
+    .total-row {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    /* Search bar responsive styles */
+    @media (max-width: 768px) {
+        .d-flex.flex-wrap.gap-2 {
+            gap: 1rem !important;
+        }
+        .d-flex.flex-wrap.gap-2 form {
+            max-width: 100% !important;
+            width: 100%;
+        }
+        .d-flex.flex-wrap.gap-2 button[data-bs-toggle="modal"] {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <form method="get" action="{% url 'myapp:creditor_dashboard' %}" class="d-flex flex-grow-1 me-2">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" 
+                           name="q" 
+                           class="form-control border-start-0" 
+                           placeholder="Search debtor by username or name" 
+                           value="{{ search_query|default:'' }}">
+                    <button type="submit" class="btn btn-primary">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        <!-- Search Badge -->
+        {% if search_query %}
+        <div class="mt-3">
+            <span class="badge bg-info fs-6">Searching for: "{{ search_query }}"</span>
+            <a href="{% url 'myapp:creditor_dashboard' %}" class="badge bg-secondary text-decoration-none fs-6">
+                <i class="bi bi-x"></i> Clear Search
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4 g-3">
+    <div class="col-12 col-md-6 col-lg-2">
+        <div class="card summary-card h-100" style="border-left-color: #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Debtors</h6>
+                        <h2 class="mb-0">{{ total_debtors }}</h2>
+                    </div>
+                    <div class="text-primary" style="font-size: 2.5rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-2">
+        <div class="card summary-card h-100" style="border-left-color: #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Pending Confirmation</h6>
+                        <h2 class="mb-0">{{ total_pending_confirmation }}</h2>
+                    </div>
+                    <div class="text-warning" style="font-size: 2.5rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-2">
+        <div class="card summary-card h-100" style="border-left-color: #20c997;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total of All Debts</h6>
+                        <h2 class="mb-0">₱{{ total_overall_debt|floatformat:2 }}</h2>
+                    </div>
+                    <div class="text-success" style="font-size: 2.5rem;">
+                        <i class="bi bi-journal-richtext"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card summary-card h-100" style="border-left-color: #28a745;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Collected</h6>
+                        <h2 class="mb-0">₱{{ total_collected|floatformat:2 }}</h2>
+                    </div>
+                    <div class="text-success" style="font-size: 2.5rem;">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="card summary-card h-100" style="border-left-color: #dc3545;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Remaining Balance</h6>
+                        <h2 class="mb-0">₱{{ total_remaining_balance|floatformat:2 }}</h2>
+                        <small class="text-muted">Unpaid + Partial</small>
+                    </div>
+                    <div class="text-danger" style="font-size: 2.5rem;">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Cash Payments Section -->
+{% if pending_cash_payments %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Pending Cash Payments 
+                    <span class="badge bg-dark">{{ pending_cash_payments.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Action Required:</strong> Review and confirm the following cash payment proofs uploaded by debtors.
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Debtor</th>
+                                <th>Debt ID</th>
+                                <th>Amount</th>
+                                <th>Uploaded</th>
+                                <th>Proof</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_cash_payments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ payment.debt.debtor.full_name }}</strong><br>
+                                    <small class="text-muted">@{{ payment.debt.debtor.username }}</small>
+                                </td>
+                                <td>#{{ payment.debt.id }}</td>
+                                <td>
+                                    <strong class="text-primary">₱{{ payment.amount|floatformat:2 }}</strong>
+                                </td>
+                                <td>
+                                    <small>{{ payment.created_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    {% if payment.debtor_proof %}
+                                        <a href="{{ payment.debtor_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-image"></i> View Proof
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No proof</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'myapp:confirm_cash_payment' payment.id %}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-circle"></i> Review & Confirm
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Debtors List -->
+{% if debtor_data %}
+<div class="row">
+    <div class="col-12">
+        <div id="debtorsAccordion">
+            {% for data in debtor_data %}
+            <!-- Debtor Card (always open) -->
+            <div class="accordion-item debtor-card">
+                <div class="accordion-header">
+                    <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-nowrap">
+                        <div class="d-flex align-items-center flex-shrink-1" style="min-width: 0;">
+                            <i class="bi bi-person-circle me-2"></i>
+                            <strong class="text-truncate">{{ data.debtor.full_name }}</strong>
+                            <span class="text-muted ms-2 text-nowrap">(@{{ data.debtor.username }})</span>
+                        </div>
+                        <div class="d-flex align-items-center flex-shrink-0 ms-3">
+                            <span class="badge bg-danger me-2 text-nowrap">Unpaid: ₱{{ data.unpaid_amount|floatformat:2 }}</span>
+                            <span class="badge bg-secondary text-nowrap">{{ data.active_debts_count }} Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-body">
+                        <!-- Debts Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for debt in data.debts %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            {% if debt.type == 'money' %}
+                                                <span class="badge bg-success">Money</span>
+                                            {% else %}
+                                                <span class="badge bg-info">Product</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>₱{{ debt.amount|floatformat:2 }}</strong>
+                                            {% if debt.status == 'paid' %}
+                                                <br><small class="text-success"><i class="bi bi-check-circle"></i> Fully Paid</small>
+                                            {% elif debt.paid_amount > 0 %}
+                                                <br><small class="text-success">Paid: ₱{{ debt.paid_amount|floatformat:2 }}</small>
+                                                <br><small class="text-danger">Remaining: ₱{{ debt.balance|floatformat:2 }}</small>
+                                            {% else %}
+                                                <br><small class="text-danger">Unpaid</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ debt.description|truncatechars:30 }}</td>
+                                        <td>{{ debt.date_created|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if debt.status == 'paid' %}
+                                                <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Paid</span>
+                                            {% elif debt.status == 'rejected' %}
+                                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Rejected</span>
+                                            {% elif debt.status == 'pending_confirmation' %}
+                                                <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Pending</span>
+                                            {% else %}
+                                                {% if debt.paid_amount > 0 and debt.balance > 0 %}
+                                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Partial</span>
+                                                {% elif debt.paid_amount > 0 and debt.balance <= 0 %}
+                                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Paid</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger"><i class="bi bi-exclamation-circle"></i> Unpaid</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <!-- View Details Button -->
+                                                <a href="{% url 'myapp:debt_detail' debt.id %}?from=creditor_dashboard" 
+                                                   class="btn btn-outline-primary" 
+                                                   data-bs-toggle="tooltip" 
+                                                   title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                
+                                                <!-- Payment Summary Button (Only for debts with payment info) -->
+                                                {% if debt.status == 'active' or debt.status == 'awaiting_confirmation' or debt.status == 'paid' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-info payment-summary-btn" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#paymentSummaryModal{{ debt.id }}"
+                                                        data-bs-tooltip="tooltip"
+                                                        title="Payment Summary">
+                                                    <i class="bi bi-cash-stack"></i>
+                                                </button>
+                                                {% endif %}
+                                                
+                                                <!-- Mark as Paid Button (Only for active debts) -->
+                                                {% if debt.status == 'active' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-success" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#markAsPaidModal{{ debt.id }}"
+                                                        data-bs-tooltip="tooltip"
+                                                        title="Mark as Paid">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                                {% endif %}
+                                                
+                                                <!-- Reject Button (Only for pending debts) -->
+                                                {% if debt.status == 'pending_confirmation' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#rejectModal{{ debt.id }}"
+                                                        data-bs-tooltip="tooltip"
+                                                        title="Reject Debt">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                                {% endif %}
+                                                
+                                                <!-- Send Reminder Button (Only for active debts) -->
+                                                {% if debt.status == 'active' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-warning" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#reminderModal{{ debt.id }}"
+                                                        data-bs-tooltip="tooltip"
+                                                        title="Send Reminder">
+                                                    <i class="bi bi-bell"></i>
+                                                </button>
+                                                {% endif %}
+                                                
+                                                <!-- Delete Button (Only for paid debts) -->
+                                                {% if debt.status == 'paid' %}
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteModal{{ debt.id }}"
+                                                        data-bs-tooltip="tooltip"
+                                                        title="Delete Paid Debt">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Payment Summary Modal -->
+                                            <div class="modal fade" id="paymentSummaryModal{{ debt.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-primary text-white">
+                                                            <h5 class="modal-title">
+                                                                <i class="bi bi-cash-stack"></i> Payment Summary
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row mb-3">
+                                                                <div class="col-6">
+                                                                    <h6>Total Debt Amount:</h6>
+                                                                    <h4>₱{{ debt.amount|floatformat:2 }}</h4>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <h6>Amount Paid:</h6>
+                                                                    <h4 class="text-success">₱{{ debt.paid_amount|default:0|floatformat:2 }}</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row mb-3">
+                                                                <div class="col-6">
+                                                                    <h6>Remaining Balance:</h6>
+                                                                    <h4 class="{% if debt.balance <= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                                        ₱{{ debt.balance|floatformat:2 }}
+                                                                    </h4>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <h6>Payment Status:</h6>
+                                                                    {% if debt.status == 'paid' or debt.balance <= 0 %}
+                                                                        <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill"></i> Fully Paid</span>
+                                                                    {% elif debt.paid_amount > 0 %}
+                                                                        <span class="badge bg-warning text-dark fs-6"><i class="bi bi-clock"></i> Partial Payment</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-danger fs-6"><i class="bi bi-exclamation-circle"></i> Unpaid</span>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="progress mb-3" style="height: 20px;">
+                                                                {% widthratio debt.paid_amount|default:0 debt.amount 100 as payment_percentage %}
+                                                                {% if payment_percentage > 100 %}
+                                                                    {% widthratio 100 1 1 as payment_percentage_fixed %}
+                                                                {% else %}
+                                                                    {% widthratio debt.paid_amount|default:0 debt.amount 100 as payment_percentage_fixed %}
+                                                                {% endif %}
+                                                                {% with width_percent=payment_percentage_fixed|default:0 %}
+                                                                <div class="progress-bar {% if debt.balance <= 0 %}bg-success{% else %}bg-warning{% endif %}" 
+                                                                     role="progressbar" 
+                                                                     style="width: {{ width_percent }}%;" 
+                                                                     aria-valuenow="{{ width_percent }}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
+                                                                    {{ width_percent }}%
+                                                                </div>
+                                                                {% endwith %}
+                                                            </div>
+                                                            <div class="alert {% if debt.balance <= 0 %}alert-success{% else %}alert-warning{% endif %} mb-0">
+                                                                <h6>Remaining Balance: <strong>₱{{ debt.balance|floatformat:2 }}</strong></h6>
+                                                                {% if debt.balance <= 0 %}
+                                                                    <p class="mb-0">This debt has been fully paid.</p>
+                                                                {% else %}
+                                                                    <p class="mb-0">Awaiting payment of ₱{{ debt.balance|floatformat:2 }}</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            {% if debt.balance > 0 %}
+                                                            <button type="button" 
+                                                                    class="btn btn-primary" 
+                                                                    data-bs-dismiss="modal"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#markAsPaidModal{{ debt.id }}">
+                                                                <i class="bi bi-cash-coin"></i> Record Payment
+                                                            </button>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Mark as Paid Modal -->
+                                            {% if debt.status == 'active' %}
+                                            <div class="modal fade" id="markAsPaidModal{{ debt.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-success text-white">
+                                                            <h5 class="modal-title"><i class="bi bi-check-circle"></i> Record Payment</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>Record payment for this debt?</strong></p>
+                                                            <div class="alert alert-info">
+                                                                <i class="bi bi-info-circle"></i> You can record partial or full payments. Click "Record Payment" to proceed.
+                                                            </div>
+                                                            <p><strong>Debt Details:</strong></p>
+                                                            <ul>
+                                                                <li>Debtor: {{ debt.debtor.full_name }}</li>
+                                                                <li>Total Debt: ₱{{ debt.amount|floatformat:2 }}</li>
+                                                                <li>Amount Paid: ₱{{ debt.paid_amount|default:0|floatformat:2 }}</li>
+                                                                <li>Remaining Balance: ₱<strong class="{% if debt.balance <= 0 %}text-success{% else %}text-danger{% endif %}">{{ debt.balance|floatformat:2 }}</strong></li>
+                                                                <li>Payment Status: 
+                                                                    {% if debt.status == 'paid' %}
+                                                                        <span class="badge bg-success">Fully Paid</span>
+                                                                    {% elif debt.paid_amount > 0 %}
+                                                                        <span class="badge bg-warning text-dark">Partial</span>
+                                                                    {% else %}
+                                                                        <span class="badge bg-danger">Unpaid</span>
+                                                                    {% endif %}
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <a href="{% url 'myapp:mark_paid' debt.id %}" class="btn btn-success">
+                                                                <i class="bi bi-cash-coin"></i> Record Payment
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <!-- Reject Modal -->
+                                            {% if debt.status == 'pending_confirmation' %}
+                                            <div class="modal fade" id="rejectModal{{ debt.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-warning">
+                                                            <h5 class="modal-title"><i class="bi bi-x-circle"></i> Reject Debt</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>Are you sure you want to reject this debt?</strong></p>
+                                                            <p>The debtor will be notified and can edit or delete the debt.</p>
+                                                            <p><strong>Debt Details:</strong></p>
+                                                            <ul>
+                                                                <li>Debtor: {{ debt.debtor.full_name }}</li>
+                                                                <li>Amount: ₱{{ debt.amount|floatformat:2 }}</li>
+                                                                {% if debt.product_name %}<li>Product: {{ debt.product_name }}</li>{% endif %}
+                                                            </ul>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <form method="post" action="{% url 'myapp:reject_debt' debt.id %}" style="display:inline;">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-warning">
+                                                                    <i class="bi bi-x-circle"></i> Reject Debt
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <!-- Send Reminder Modal -->
+                                            {% if debt.status == 'active' %}
+                                            <div class="modal fade" id="reminderModal{{ debt.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-info text-white">
+                                                            <h5 class="modal-title"><i class="bi bi-bell"></i> Send Payment Reminder</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <form method="post" action="{% url 'myapp:send_reminder' debt.id %}">
+                                                            {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <p><strong>Send a payment reminder to {{ debt.debtor.full_name }}?</strong></p>
+                                                                <div class="alert alert-info">
+                                                                    <i class="bi bi-info-circle"></i> The debtor will receive an in-app notification reminding them about this debt.
+                                                                </div>
+                                                                <p><strong>Debt Details:</strong></p>
+                                                                <ul>
+                                                                    <li>Amount: ₱{{ debt.amount|floatformat:2 }}</li>
+                                                                    <li>Remaining Balance: ₱{{ debt.balance|floatformat:2 }}</li>
+                                                                    {% if debt.product_name %}<li>Product: {{ debt.product_name }}</li>{% endif %}
+                                                                    <li>Date Created: {{ debt.date_created|date:"M d, Y" }}</li>
+                                                                </ul>
+                                                                <div class="mb-3">
+                                                                    <label for="reminder_message{{ debt.id }}" class="form-label">Custom Message (Optional)</label>
+                                                                    <textarea class="form-control" 
+                                                                              id="reminder_message{{ debt.id }}" 
+                                                                              name="message" 
+                                                                              rows="3" 
+                                                                              placeholder="Add a custom message to the reminder..."></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-info text-white">
+                                                                    <i class="bi bi-send"></i> Send Reminder
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <!-- Delete Paid Debt Modal -->
+                                            {% if debt.status == 'paid' %}
+                                            <div class="modal fade" id="deleteModal{{ debt.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-danger text-white">
+                                                            <h5 class="modal-title"><i class="bi bi-trash"></i> Delete Paid Debt</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <form method="post" action="{% url 'myapp:creditor_delete_debt' debt.id %}">
+                                                            {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-warning">
+                                                                    <i class="bi bi-exclamation-triangle"></i> 
+                                                                    <strong>Warning:</strong> This action will permanently delete this paid debt record.
+                                                                </div>
+                                                                <p><strong>Are you sure you want to delete this paid debt?</strong></p>
+                                                                <p><strong>Debt Details:</strong></p>
+                                                                <ul>
+                                                                    <li>Debtor: <strong>{{ debt.debtor.full_name }}</strong></li>
+                                                                    <li>Amount: <strong>₱{{ debt.amount|floatformat:2 }}</strong></li>
+                                                                    <li>Status: <span class="badge bg-success">Paid</span></li>
+                                                                    {% if debt.product_name %}<li>Product: {{ debt.product_name }}</li>{% endif %}
+                                                                    <li>Date Created: {{ debt.date_created|date:"M d, Y" }}</li>
+                                                                    {% if debt.date_paid %}<li>Date Paid: {{ debt.date_paid|date:"M d, Y" }}</li>{% endif %}
+                                                                </ul>
+                                                                <p class="text-muted small">
+                                                                    <i class="bi bi-info-circle"></i> 
+                                                                    The debtor will be notified about this deletion.
+                                                                </p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">
+                                                                    <i class="bi bi-trash"></i> Delete Debt
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">
+                                                    <i class="bi bi-inbox"></i> No debts for this debtor.
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="total-row">
+                                                <td colspan="2"><strong>Summary for {{ data.debtor.full_name }}:</strong></td>
+                                                <td colspan="5">
+                                                    <div class="d-flex flex-wrap gap-3">
+                                                        <div>
+                                                            <small class="text-muted d-block">Overall Debt:</small>
+                                                            <strong>₱{{ data.total_amount|floatformat:2 }}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <small class="text-muted d-block">Amount Collected:</small>
+                                                            <strong class="text-success">₱{{ data.paid_amount|floatformat:2 }}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <small class="text-muted d-block">Remaining Balance:</small>
+                                                            <strong class="text-danger">₱{{ data.unpaid_amount|floatformat:2 }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% elif search_query %}
+<!-- No Debtor Found -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning text-center py-5">
+            <i class="bi bi-exclamation-triangle" style="font-size: 3rem;"></i>
+            <h4 class="mt-3">No debtor found</h4>
+            <p class="mb-0">No debtor with username "<strong>{{ search_query }}</strong>" was found in your records.</p>
+            <p class="mt-2 mb-0">Please check the username and try again.</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- No Debtors Yet -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">No Debtors Yet</h4>
+            <p class="mb-0">You don't have any debtors yet. Debts will appear here when debtors add them and you confirm.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Back to Top Button -->
+<button id="backToTop" class="btn btn-primary btn-lg back-to-top" title="Back to Top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Back to Top Button Functionality
+    const backToTopButton = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            backToTopButton.style.display = 'block';
+        } else {
+            backToTopButton.style.display = 'none';
+        }
+    });
+    
+    backToTopButton.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Initialize Bootstrap Tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

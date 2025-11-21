@@ -1,0 +1,367 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}User Details - {{ target_user.full_name|default:target_user.username }} - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-user-detail {
+        padding: 20px 0;
+        background-color: #bfecac;
+        min-height: 100vh;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: #004085;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .user-profile-card {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .user-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--primary-color);
+        margin-bottom: 20px;
+    }
+    
+    .user-avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    .user-type-badge {
+        font-size: 1rem;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-weight: 500;
+    }
+    
+    .creditor-badge {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .debtor-badge {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .admin-badge {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .superuser-badge {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .info-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+    
+    .section-card {
+        background: #bfecac;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .debt-card, .payment-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-paid {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .amount {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    @media (max-width: 768px) {
+        .user-profile-card {
+            padding: 20px;
+        }
+        
+        .user-avatar, .user-avatar-placeholder {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-user-detail">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-person-circle"></i> User Details</h1>
+        <div class="subtitle">View detailed information about {{ target_user.full_name|default:target_user.username }}</div>
+    </div>
+    
+    <div class="row">
+        <!-- User Profile -->
+        <div class="col-lg-4">
+            <div class="user-profile-card text-center">
+                {% if target_user.profile_picture %}
+                    <img src="{{ target_user.profile_picture.url }}" alt="{{ target_user.full_name }}" class="user-avatar">
+                {% else %}
+                    <div class="user-avatar-placeholder">
+                        {{ target_user.full_name.0|default:target_user.username.0|default:"?"|upper }}
+                    </div>
+                {% endif %}
+                
+                <h3>{{ target_user.full_name|default:target_user.username }}</h3>
+                
+                <div class="mb-3">
+                    {% if target_user.is_superuser %}
+                        <span class="badge user-type-badge superuser-badge">SUPERUSER</span>
+                    {% else %}
+                        <span class="badge user-type-badge {{ target_user.account_type }}-badge">
+                            {{ target_user.get_account_type_display }}
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <div class="text-start">
+                    <div class="info-row">
+                        <div class="info-label">Username</div>
+                        <div class="info-value">{{ target_user.username }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ target_user.email|default:"Not provided" }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Account Type</div>
+                        <div class="info-value">
+                            {% if target_user.is_superuser %}
+                                Superuser
+                            {% else %}
+                                {{ target_user.get_account_type_display }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Date Joined</div>
+                        <div class="info-value">{{ target_user.date_joined|date:"F d, Y" }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Status</div>
+                        <div class="info-value">
+                            {% if target_user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if target_user.account_type == 'creditor' %}
+                    <div class="info-row">
+                        <div class="info-label">Total Loaned</div>
+                        <div class="info-value" style="color: var(--primary-color); font-weight: 600;">₱{{ total_loaned|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Total Paid to Creditor</div>
+                        <div class="info-value" style="color: var(--success-color); font-weight: 600;">₱{{ total_paid|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Remaining Balance</div>
+                        <div class="info-value" style="color: var(--warning-color); font-weight: 600;">₱{{ total_balance|floatformat:2 }}</div>
+                    </div>
+                    {% else %}
+                    <div class="info-row">
+                        <div class="info-label">Total Owed</div>
+                        <div class="info-value" style="color: var(--danger-color); font-weight: 600;">₱{{ total_owed|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Total Paid</div>
+                        <div class="info-value" style="color: var(--success-color); font-weight: 600;">₱{{ total_paid|floatformat:2 }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Balance</div>
+                        <div class="info-value" style="color: var(--warning-color); font-weight: 600;">₱{{ total_balance|floatformat:2 }}</div>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{% url 'myapp:admin_users' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Users
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Activity -->
+        <div class="col-lg-8">
+            <!-- Debts Section -->
+            <div class="section-card">
+                <h4 class="mb-3">
+                    <i class="bi bi-file-text"></i> 
+                    {% if target_user.account_type == 'creditor' %}Debts Owed to User{% elif target_user.account_type == 'admin' %}User's Debts{% else %}User's Debts{% endif %}
+                    ({{ debts.count }})
+                </h4>
+                
+                {% for debt in debts %}
+                <div class="debt-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <h6 class="mb-0">
+                                    {% if debt.type == 'product' %}
+                                        {{ debt.product_name }}
+                                    {% else %}
+                                        ₱{{ debt.amount }}
+                                    {% endif %}
+                                </h6>
+                                <span class="status-badge status-{{ debt.status }}">
+                                    {{ debt.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="text-muted small">
+                                {% if target_user.account_type == 'creditor' %}
+                                    Debtor: <strong>{{ debt.debtor.full_name|default:debt.debtor.username }}</strong>
+                                {% else %}
+                                    Creditor: <strong>{{ debt.creditor.full_name|default:debt.creditor.username }}</strong>
+                                {% endif %}
+                                • Created: {{ debt.date_created|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="amount">₱{{ debt.amount }}</div>
+                            <div class="text-muted small">Balance: ₱{{ debt.balance }}</div>
+                            <a href="{% url 'myapp:admin_debt_detail' debt.id %}" class="btn btn-sm btn-outline-primary mt-1">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No debts found for this user</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Payments Section -->
+            <div class="section-card">
+                <h4 class="mb-3">
+                    <i class="bi bi-credit-card"></i> 
+                    Payment History ({{ payments.count }})
+                </h4>
+                
+                {% for payment in payments %}
+                <div class="payment-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <h6 class="mb-0">Payment #{{ payment.receipt_no }}</h6>
+                                <span class="status-badge status-{{ payment.status }}">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="text-muted small">
+                                Method: {{ payment.get_method_display|title }}
+                                • Date: {{ payment.created_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="amount">₱{{ payment.amount }}</div>
+                            {% if payment.reference_number %}
+                                <div class="text-muted small">Ref: {{ payment.reference_number }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-credit-card fs-1"></i>
+                    <p class="mt-2">No payments found for this user</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

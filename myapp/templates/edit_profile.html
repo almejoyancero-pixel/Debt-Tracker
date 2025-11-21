@@ -1,0 +1,108 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Edit Profile - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-profile-card {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+    .profile-preview {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <!-- Edit Profile Card -->
+    <div class="card shadow-lg edit-profile-card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Profile</h4>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Profile Preview -->
+            <div class="text-center mb-4">
+                <img src="https://ui-avatars.com/api/?name={{ request.user.full_name|urlencode }}&size=120&background=0d6efd&color=fff&bold=true" 
+                     alt="Profile Picture" 
+                     class="rounded-circle profile-preview mb-3"
+                     id="profilePreview">
+                <p class="text-muted small">Profile picture is auto-generated from your name</p>
+            </div>
+
+            <!-- Edit Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="username" 
+                           value="{{ request.user.username }}" 
+                           disabled>
+                    <div class="form-text">Username cannot be changed</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="full_name" 
+                           name="full_name" 
+                           value="{{ request.user.full_name }}" 
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="account_type" class="form-label">Account Type</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="account_type" 
+                           value="{{ request.user.get_account_type_display }}" 
+                           disabled>
+                    <div class="form-text">Account type cannot be changed</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_joined" class="form-label">Member Since</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="date_joined" 
+                           value="{{ request.user.date_joined|date:'F d, Y' }}" 
+                           disabled>
+                </div>
+
+                <hr>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <a href="{% url 'myapp:profile' %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update profile preview when name changes
+    document.getElementById('full_name').addEventListener('input', function() {
+        const name = this.value || 'User';
+        const encodedName = encodeURIComponent(name);
+        document.getElementById('profilePreview').src = 
+            `https://ui-avatars.com/api/?name=${encodedName}&size=120&background=0d6efd&color=fff&bold=true`;
+    });
+</script>
+{% endblock %}

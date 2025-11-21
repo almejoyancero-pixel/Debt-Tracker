@@ -1,0 +1,113 @@
+{% extends 'custom_admin/base.html' %}
+{% load static %}
+
+{% block custom_admin_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">{{ page_title }}</h5>
+                    <small class="text-muted">{{ total_users }} total records</small>
+                </div>
+                <a href="{% if 'creditor' in page_title %}{% url 'myapp:creditors_add' %}{% elif 'debtor' in page_title %}{% url 'myapp:debtors_add' %}{% else %}{% url 'myapp:users_add' %}{% endif %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add New
+                </a>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Account Type</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            {{ user.full_name.0|default:user.username.0|default:"?"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">{{ user.full_name|default:user.username }}</div>
+                                            <small class="text-muted">@{{ user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email|default:"-" }}</td>
+                                <td>
+                                    {% if user.account_type == 'creditor' %}
+                                        <span class="badge bg-info">Creditor</span>
+                                    {% elif user.account_type == 'debtor' %}
+                                        <span class="badge bg-warning">Debtor</span>
+                                    {% elif user.account_type == 'admin' %}
+                                        <span class="badge bg-secondary">Admin</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                        <span class="badge bg-danger">Superuser</span>
+                                    {% elif user.is_staff %}
+                                        <span class="badge bg-primary">Staff</span>
+                                    {% elif user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if 'creditor' in page_title %}
+                                            <a href="{% url 'myapp:creditors_edit' user.id %}" class="btn btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'myapp:creditors_delete' user.id %}" class="btn btn-outline-danger" onclick="return confirm('Are you sure?')" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% elif 'debtor' in page_title %}
+                                            <a href="{% url 'myapp:debtors_edit' user.id %}" class="btn btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'myapp:debtors_delete' user.id %}" class="btn btn-outline-danger" onclick="return confirm('Are you sure?')" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'myapp:users_edit' user.id %}" class="btn btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'myapp:users_delete' user.id %}" class="btn btn-outline-danger" onclick="return confirm('Are you sure?')" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+                    <p class="text-muted mt-3">No records found</p>
+                    <a href="{% if 'creditor' in page_title %}{% url 'myapp:creditors_add' %}{% elif 'debtor' in page_title %}{% url 'myapp:debtors_add' %}{% else %}{% url 'myapp:users_add' %}{% endif %}" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle"></i> Create First Record
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

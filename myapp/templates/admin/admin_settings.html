@@ -1,0 +1,335 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Settings - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Cards */
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #B36BFF;
+        box-shadow: 0 0 0 0.2rem rgba(179, 107, 255, 0.25);
+    }
+
+    .form-check-input:checked {
+        background-color: #B36BFF;
+        border-color: #B36BFF;
+    }
+
+    .btn-primary {
+        background-color: #B36BFF;
+        border-color: #B36BFF;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #9a5ce6;
+        border-color: #9a5ce6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(179, 107, 255, 0.3);
+    }
+
+    .btn-outline-secondary {
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    h6.text-primary {
+        color: #B36BFF !important;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .table-borderless td {
+        padding: 10px 0;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card">
+            <div class="d-flex align-items-center mb-4">
+                <div class="card-icon" style="background: linear-gradient(135deg, #B36BFF, #9a5ce6); color: white;">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">System Settings</h4>
+                    <p class="text-muted mb-0">Configure system-wide settings and preferences</p>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-sliders"></i> General Settings
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <label for="site_name" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="site_name" name="site_name" value="{{ settings.site_name|default:'Debt Tracker' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="admin_email" class="form-label">Admin Email</label>
+                            <input type="email" class="form-control" id="admin_email" name="admin_email" value="{{ settings.admin_email|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-wrench"></i> System Configuration
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="maintenance_mode" name="maintenance_mode" {% if settings.maintenance_mode %}checked{% endif %}>
+                                <label class="form-check-label" for="maintenance_mode">
+                                    Maintenance Mode
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1">When enabled, only superusers can access the system</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="allow_registration" name="allow_registration" {% if settings.allow_registration %}checked{% endif %}>
+                                <label class="form-check-label" for="allow_registration">
+                                    Allow User Registration
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1">When disabled, only admins can create new accounts</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-envelope"></i> Email Settings
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <label for="smtp_host" class="form-label">SMTP Host</label>
+                            <input type="text" class="form-control" id="smtp_host" name="smtp_host" placeholder="smtp.example.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="smtp_port" class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtp_port" name="smtp_port" placeholder="587">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-shield-lock"></i> Security Settings
+                        </h6>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="require_email_verification" name="require_email_verification">
+                                <label class="form-check-label" for="require_email_verification">
+                                    Require Email Verification
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enable_two_factor" name="enable_two_factor">
+                                <label class="form-check-label" for="enable_two_factor">
+                                    Enable Two-Factor Authentication
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-hdd-stack"></i> Backup Settings
+                        </h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="backup_frequency" class="form-label">Backup Frequency</label>
+                                    <select class="form-select" id="backup_frequency" name="backup_frequency">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="backup_retention" class="form-label">Retention Period (days)</label>
+                                    <input type="number" class="form-control" id="backup_retention" name="backup_retention" value="30">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Options</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="auto_backup" name="auto_backup" checked>
+                                        <label class="form-check-label" for="auto_backup">
+                                            Automatic Backup
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetSettings()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="dashboard-card">
+            <div class="d-flex align-items-center mb-4">
+                <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">System Information</h4>
+                    <p class="text-muted mb-0">Current system version and configuration details</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Django Version:</strong></td>
+                            <td><span class="badge bg-primary">{{ django_version|default:'N/A' }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Python Version:</strong></td>
+                            <td><span class="badge bg-primary">{{ python_version|default:'N/A' }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Database:</strong></td>
+                            <td><span class="badge bg-secondary">{{ database_backend|default:'N/A' }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Debug Mode:</strong></td>
+                            <td>
+                                {% if debug %}
+                                    <span class="badge bg-success">Enabled</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Disabled</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Timezone:</strong></td>
+                            <td><span class="badge bg-info">{{ timezone|default:'UTC' }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Server Time:</strong></td>
+                            <td><small class="text-muted">{{ server_time|date:"Y-m-d H:i:s"|default:'N/A' }}</small></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function resetSettings() {
+    if (confirm('Are you sure you want to reset all settings to their default values?')) {
+        // Reset form to default values
+        document.getElementById('site_name').value = 'Debt Tracker';
+        document.getElementById('admin_email').value = 'admin@debttracker.com';
+        document.getElementById('maintenance_mode').checked = false;
+        document.getElementById('allow_registration').checked = true;
+        document.getElementById('smtp_host').value = '';
+        document.getElementById('smtp_port').value = '587';
+        document.getElementById('require_email_verification').checked = false;
+        document.getElementById('enable_two_factor').checked = false;
+        document.getElementById('backup_frequency').value = 'weekly';
+        document.getElementById('backup_retention').value = '30';
+        document.getElementById('auto_backup').checked = true;
+    }
+}
+</script>
+{% endblock %}

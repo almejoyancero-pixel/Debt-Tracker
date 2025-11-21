@@ -1,0 +1,413 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Debt Tracker System</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            /* Blue to light-green gradient inspired by Debt Tracker poster */
+            background: linear-gradient(to bottom, #00357a 0%, #00357a 12%, #bfecac 12%, #bfecac 100%);
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+            background-color: #00357a !important;
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .navbar-brand span {
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #e5f8ff;
+        }
+
+        .hero-section {
+            padding: 100px 0 80px;
+            /* Soft light-green gradient like the poster background */
+            background: radial-gradient(circle at top left, #d9ffd0 0, #bfecac 45%, #e6ffe0 100%);
+        }
+
+        .hero-title {
+            font-size: clamp(2.3rem, 4vw, 3rem);
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: #4b5563;
+            max-width: 540px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .hero-buttons .btn {
+            padding: 0.7rem 1.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .hero-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.12);
+            padding: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .section-subtitle {
+            color: #234155;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        #about {
+            padding: 80px 0 60px;
+        }
+
+        #features {
+            padding: 60px 0 60px;
+        }
+
+        .feature-card {
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            background: #ffffff;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.12);
+            border-color: #0f766e;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecfeff;
+            color: #0f766e;
+            font-size: 1.3rem;
+        }
+
+        #contact {
+            padding: 60px 0 70px;
+        }
+
+        .contact-card {
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+        }
+
+        footer {
+            background: #0f172a;
+            color: #9ca3af;
+            padding: 18px 0;
+        }
+
+        footer a {
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #a5b4fc;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (max-width: 991.98px) {
+            .hero-section {
+                padding-top: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#home">
+            <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Debt Tracker Logo">
+            <span>DEBT TRACKER SYSTEM</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#about">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact</a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <a class="btn btn-outline-primary rounded-pill px-3" href="{% url 'myapp:login' %}">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                    </a>
+                </li>
+                <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                    <a class="btn btn-primary rounded-pill px-3" href="{% url 'myapp:register' %}">
+                        <i class="bi bi-person-plus me-1"></i> Register
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section id="home" class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <i class="bi bi-check2-circle me-1"></i> Built for sari-sari store owners
+                </div>
+                <h1 class="hero-title">
+                    Track Debts Easily.<br>Eliminate Miscommunication.
+                </h1>
+                <p class="hero-subtitle mt-3">
+                    Debt Tracker System helps sari-sari store owners and customers keep debts and payments clear.
+                    No more lost notebooks, missing records, or confusion about who owes what.
+                </p>
+                <div class="hero-buttons mt-4 d-flex flex-wrap gap-3">
+                    <a href="{% url 'myapp:login' %}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                    </a>
+                    <a href="{% url 'myapp:register' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus me-1"></i> Register
+                    </a>
+                </div>
+                <p class="text-muted small mt-3">
+                    Separate dashboards for <strong>creditors</strong> and <strong>debtors</strong> to keep both sides updated.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-card">
+                    <h5 class="mb-3 text-muted">
+                        <i class="bi bi-speedometer2 text-primary me-2"></i>Why use Debt Tracker?
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex mb-3">
+                            <div class="me-3 text-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div>
+                                <strong>Never lose track of utang.</strong><br>
+                                See all active, pending, and paid debts in a single dashboard.
+                            </div>
+                        </li>
+                        <li class="d-flex mb-3">
+                            <div class="me-3 text-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div>
+                                <strong>Both sides see the same records.</strong><br>
+                                Creditor and debtor share the same transaction history to avoid confusion.
+                            </div>
+                        </li>
+                        <li class="d-flex">
+                            <div class="me-3 text-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div>
+                                <strong>Fast confirmation of payments.</strong><br>
+                                Debtors can submit proof, and creditors confirm in real time.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-4">
+            <div class="col-lg-8">
+                <h2 class="section-title">About Debt Tracker System</h2>
+                <p class="section-subtitle mt-2">
+                    Debt Tracker System is designed especially for small businesses and sari-sari store owners
+                    who still manage debts using notebooks or verbal agreements.
+                </p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm">
+                    <p class="mb-3">
+                        With this system, creditors can list every utang, monitor who still has balance,
+                        and confirm payments with just a few clicks. Debtors can also see their current balance,
+                        past payments, and the status of their debts anytime.
+                    </p>
+                    <p class="mb-0">
+                        By putting all records in one secure place, the Debt Tracker System helps avoid
+                        <strong>miscommunication</strong>, <strong>arguments</strong>, and
+                        <strong>lost records</strong>, making it easier to maintain good relationships
+                        between store owners and customers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-4">
+            <div class="col-lg-8">
+                <h2 class="section-title">Key Features</h2>
+                <p class="section-subtitle mt-2">
+                    Everything you need to organize debts, monitor payments, and keep both sides updated.
+                </p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <h5>Easy Debt Tracking</h5>
+                    <p class="text-muted small mb-0">
+                        Record debts per customer with amount, description, and status in a clean interface.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </div>
+                    <h5>Clear Payment Records</h5>
+                    <p class="text-muted small mb-0">
+                        Every payment is logged with date, amount, and proof, so you always have a clear history.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h5>Real-Time Confirmation</h5>
+                    <p class="text-muted small mb-0">
+                        Debtors upload proof and creditors approve or reject quickly to keep balances updated.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h5>Separate Dashboards</h5>
+                    <p class="text-muted small mb-0">
+                        Different views for creditors and debtors so each user sees only what they need.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact">
+    <div class="container">
+        <div class="row justify-content-center text-center mb-4">
+            <div class="col-lg-8">
+                <h2 class="section-title">Contact &amp; Support</h2>
+                <p class="section-subtitle mt-2">
+                    Need help or want to suggest improvements? Reach out and we’ll be happy to assist.
+                </p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="contact-card bg-white p-4 p-md-5 rounded-4">
+                    <div class="row g-4">
+                        <div class="col-md-6 text-start text-md-center">
+                            <h6><i class="bi bi-envelope me-2 text-primary"></i>Email</h6>
+                            <p class="mb-0 text-muted small">debttrackersystem@gmail.com</p>
+                        </div>
+                        <div class="col-md-6 text-start text-md-center">
+                            <h6><i class="bi bi-phone me-2 text-primary"></i>Phone</h6>
+                            <p class="mb-0 text-muted small">+63 900 000 0000</p>
+                        </div>
+                    </div>
+                    <p class="text-muted small text-center mt-4 mb-0">
+                        This system is for demonstration and management use. Please contact the administrator
+                        for account access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <div class="small">
+            &copy; {{ now|date:'Y' }} Debt Tracker System. All rights reserved.
+        </div>
+        <div class="d-flex gap-3 small">
+            <a href="#home"><i class="bi bi-house-door me-1"></i>Home</a>
+            <a href="#" target="_blank"><i class="bi bi-facebook me-1"></i>Facebook</a>
+            <a href="#" target="_blank"><i class="bi bi-envelope me-1"></i>Email</a>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

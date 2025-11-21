@@ -1,0 +1,689 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Debt Tracker System{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #00357a;
+            --secondary-color: #004E89;
+            --background-color: #bfecac;
+            --accent-color: #A8E6CF;
+            --text-color: #0B1D26;
+            --white: #FFFFFF;
+        }
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .navbar {
+            background-color: var(--primary-color) !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+            color: var(--white) !important;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--accent-color) !important;
+        }
+        
+        .nav-link {
+            color: var(--white) !important;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent-color) !important;
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            background-color: var(--white);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover {
+            background-color: #8FD9B6;
+            transform: scale(1.05);
+            color: var(--text-color);
+        }
+        
+        .btn-danger {
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-warning {
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-warning:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-info {
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-info:hover {
+            background-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        
+        .btn-secondary {
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: scale(1.05);
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: var(--white);
+        }
+        
+        .table thead {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .bg-success {
+            background-color: var(--accent-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        a:hover {
+            color: var(--accent-color);
+        }
+        
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-align: center;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(1, 58, 99, 0.25);
+        }
+        
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .modal-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .logo {
+            height: 40px;     /* Match landing page logo size */
+            width: 40px;
+            border-radius: 50%; /* round logo like landing page */
+            object-fit: contain;
+        }
+        
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+        }
+        
+        .profile-toggle {
+            background: none;
+            border: none;
+            color: var(--white);
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .profile-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .profile-toggle i {
+            font-size: 1.2rem;
+        }
+        
+        .profile-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            min-width: 280px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .profile-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .dropdown-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+        
+        .dropdown-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .dropdown-user-info {
+            flex: 1;
+        }
+        
+        .dropdown-username {
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        
+        .dropdown-role {
+            color: #666;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+        
+        .dropdown-item i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: 8px 0;
+        }
+        
+        .dropdown-logout {
+            color: #dc3545;
+        }
+        
+        .dropdown-logout:hover {
+            background-color: #fff5f5;
+            color: #dc3545;
+        }
+        
+        .dropdown-edit-profile {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .dropdown-edit-profile:hover {
+            background-color: #e7f3ff;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .profile-dropdown-menu {
+                min-width: 250px;
+                right: -20px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <a class="navbar-brand" href="{% url 'myapp:admin_dashboard' %}">
+                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        DEBT TRACKER SYSTEM
+                    </a>
+                {% elif user.account_type == 'creditor' %}
+                    <a class="navbar-brand" href="{% url 'myapp:creditor_dashboard' %}">
+                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        DEBT TRACKER SYSTEM
+                    </a>
+                {% else %}
+                    <a class="navbar-brand" href="{% url 'myapp:debtor_dashboard' %}">
+                        <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                        DEBT TRACKER SYSTEM
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="navbar-brand" href="{% url 'myapp:home' %}">
+                    <img src="{% static 'image/Debt Tracker logo.png' %}" alt="Logo" class="logo me-2">
+                    DEBT TRACKER SYSTEM
+                </a>
+            {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'myapp:creditor_dashboard' %}">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'myapp:notifications' %}">
+                                <i class="bi bi-bell"></i> Notifications
+                                {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_notifications_count }}
+                                    <span class="visually-hidden">unread notifications</span>
+                                </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item profile-dropdown">
+                            <button class="nav-link profile-toggle" onclick="toggleProfileDropdown(event)">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                    <i class="bi bi-person-circle"></i>
+                                {% endif %}
+                                <span class="d-none d-md-inline">{{ user.full_name|default:user.username }}</span>
+                                <i class="bi bi-chevron-down" style="font-size: 0.8rem;"></i>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div class="profile-dropdown-menu" id="profileDropdown">
+                                <!-- Header with user info -->
+                                <div class="dropdown-header">
+                                    <div class="dropdown-avatar">
+                                        {% if user.profile_picture %}
+                                            <img src="{{ user.profile_picture.url }}" alt="Profile">
+                                        {% else %}
+                                            {{ user.full_name|default:user.username|default:"?"|slice:":1"|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="dropdown-user-info">
+                                        <div class="dropdown-username">{{ user.full_name|default:user.username }}</div>
+                                        <div class="dropdown-role">
+                                            {% if user.is_superuser %}
+                                                <i class="bi bi-shield-check"></i> Superuser
+                                            {% elif user.account_type == 'creditor' %}
+                                                <i class="bi bi-briefcase"></i> Creditor
+                                            {% elif user.account_type == 'admin' %}
+                                                <i class="bi bi-shield"></i> Admin
+                                            {% else %}
+                                                <i class="bi bi-person"></i> Debtor
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Menu Items -->
+                                <div class="dropdown-divider"></div>
+                                
+                                <a href="{% url 'myapp:profile' %}" class="dropdown-item dropdown-edit-profile">
+                                    <i class="bi bi-person-badge"></i>
+                                    Account Information
+                                </a>
+                                
+                                <div class="dropdown-divider"></div>
+                                
+                                <a href="#" class="dropdown-item dropdown-logout" onclick="logoutWithConfirmation(event)">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+                        
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'myapp:home' %}">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'myapp:register' %}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Debt Tracker System. All rights reserved.</p>
+            <small>Manage debts efficiently and securely</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Profile Dropdown JavaScript -->
+    <script>
+        // Toggle profile dropdown
+        function toggleProfileDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropdown = document.getElementById('profileDropdown');
+            const isOpen = dropdown.classList.contains('show');
+            
+            // Close all dropdowns
+            document.querySelectorAll('.profile-dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+            
+            // Toggle current dropdown
+            if (!isOpen) {
+                dropdown.classList.add('show');
+            }
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const toggle = event.target.closest('.profile-toggle');
+            
+            if (!toggle) {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        // Logout with confirmation
+        function logoutWithConfirmation(event) {
+            event.preventDefault();
+            
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '{% url "myapp:logout" %}';
+            }
+        }
+        
+        // Open Account Information Modal
+        function openAccountInfoModal(event) {
+            event.preventDefault();
+            
+            // Create modal HTML
+            const modalHtml = `
+                <div class="modal fade" id="accountInfoModal" tabindex="-1" aria-labelledby="accountInfoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="accountInfoModalLabel">
+                                    <i class="bi bi-person-badge"></i> Account Information
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center mb-4">
+                                    <div class="mb-3">
+                                        {% if user.profile_picture %}
+                                            <img src="{{ user.profile_picture.url }}" alt="Profile Picture" 
+                                                 style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-color);">
+                                        {% else %}
+                                            <div style="width: 120px; height: 120px; border-radius: 50%; background-color: var(--accent-color); 
+                                                        display: flex; align-items: center; justify-content: center; margin: 0 auto; 
+                                                        font-size: 3rem; font-weight: 600; color: var(--text-color);">
+                                                {{ user.full_name|default:user.username|default:"?"|slice:":1"|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <h4 class="mb-1">{{ user.full_name|default:user.username }}</h4>
+                                    <span class="badge bg-primary">
+                                        {% if user.is_superuser %}
+                                            <i class="bi bi-shield-check"></i> Superuser
+                                        {% elif user.account_type == 'creditor' %}
+                                            <i class="bi bi-briefcase"></i> Creditor
+                                        {% elif user.account_type == 'admin' %}
+                                            <i class="bi bi-shield"></i> Admin
+                                        {% else %}
+                                            <i class="bi bi-person"></i> Debtor
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted">Username</label>
+                                            <p class="form-control-plaintext fw-semibold">{{ user.username }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted">Email Address</label>
+                                            <p class="form-control-plaintext">
+                                                {% if user.email %}
+                                                    {{ user.email }}
+                                                {% else %}
+                                                    <span class="text-muted">Not provided</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Date Joined</label>
+                                    <p class="form-control-plaintext">{{ user.date_joined|date:"F d, Y" }}</p>
+                                </div>
+                                
+                                {% if user.profile_summary %}
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Profile Summary</label>
+                                    <p class="form-control-plaintext">{{ user.profile_summary }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <a href="{% url 'myapp:edit_profile' %}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('accountInfoModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to body and show it
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('accountInfoModal'));
+            modal.show();
+            
+            // Clean up modal when hidden
+            document.getElementById('accountInfoModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

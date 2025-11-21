@@ -1,0 +1,150 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Pay Debt - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Debt Summary Card -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-credit-card"></i> Payment Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Creditor:</strong></p>
+                        <p>{{ debt.creditor.full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Debt Type:</strong></p>
+                        <p>
+                            {% if debt.type == 'money' %}
+                                <span class="badge bg-success">Money</span>
+                            {% else %}
+                                <span class="badge bg-info">Product</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Product/Item:</strong></p>
+                        <p>{{ debt.product_name|default:"N/A" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Amount to Pay:</strong></p>
+                        <h2 class="text-primary mb-0">₱{{ debt.amount|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form Card -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-wallet2"></i> Payment Method</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="{% url 'myapp:pay_debt' debt.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="method" class="form-label">
+                            <i class="bi bi-credit-card-2-front"></i> Select Payment Method <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select form-select-lg" id="method" name="method" required>
+                            <option value="">Choose payment method...</option>
+                            <option value="cash">💵 Cash</option>
+                            <option value="gcash">📱 GCash</option>
+                            <option value="paypal">💳 PayPal</option>
+                            <option value="bank">🏦 Bank Transfer</option>
+                            <option value="other">📝 Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="reference_number" class="form-label">
+                            <i class="bi bi-hash"></i> Transaction/Reference Number
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="reference_number" 
+                               name="reference_number" 
+                               placeholder="e.g., GC123456789, TXN-001, etc.">
+                        <div class="form-text">Optional: Enter transaction ID or reference number for verification.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="proof" class="form-label">
+                            <i class="bi bi-file-earmark-image"></i> Upload Payment Proof/Receipt
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="proof" 
+                               name="proof"
+                               accept="image/*,.pdf">
+                        <div class="form-text">
+                            Optional: Upload screenshot or photo of payment receipt (JPG, PNG, GIF, or PDF - Max 5MB)
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Note:</strong> After submitting payment, the creditor will be notified and can verify your payment.
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'myapp:debtor_dashboard' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Submit Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Payment Instructions Card -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Payment Instructions</h5>
+            </div>
+            <div class="card-body">
+                <h6>GCash</h6>
+                <p class="small">Send payment to the creditor's GCash number and enter the reference number above.</p>
+                
+                <h6>PayPal</h6>
+                <p class="small">Transfer funds via PayPal and provide the transaction ID.</p>
+                
+                <h6>Bank Transfer</h6>
+                <p class="small">Transfer to the creditor's bank account and enter the transaction reference.</p>
+                
+                <h6>Cash</h6>
+                <p class="small">Pay in person and mark as cash payment.</p>
+                
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    <strong>Important:</strong> Always keep proof of payment for your records.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Preview selected file
+    document.getElementById('proof').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name;
+        if (fileName) {
+            const fileSize = (e.target.files[0].size / 1024 / 1024).toFixed(2);
+            console.log(`Selected file: ${fileName} (${fileSize} MB)`);
+        }
+    });
+</script>
+{% endblock %}

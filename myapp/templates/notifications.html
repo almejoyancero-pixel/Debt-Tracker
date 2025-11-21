@@ -1,0 +1,324 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Notifications - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-item {
+        border-left: 4px solid #0d6efd;
+        transition: all 0.3s;
+    }
+    .notification-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+    .notification-item.unread {
+        background-color: #e7f3ff;
+        border-left-color: #0d6efd;
+        font-weight: 500;
+    }
+    .notification-item.read {
+        border-left-color: #6c757d;
+        opacity: 0.85;
+    }
+    .notification-icon {
+        font-size: 2rem;
+    }
+    .notification-icon.payment-success {
+        color: #28a745;
+    }
+    .notification-icon.payment-received {
+        color: #17a2b8;
+    }
+    .notification-icon.debt-confirmed {
+        color: #ffc107;
+    }
+    .notification-icon.debt-rejected {
+        color: #dc3545;
+    }
+    .notification-icon.debt-added {
+        color: #6f42c1;
+    }
+    .notification-icon.debt-pending-confirmation {
+        color: #ffc107;
+    }
+    .delete-btn {
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+    .delete-btn:hover {
+        opacity: 1;
+    }
+    .unread-indicator {
+        width: 10px;
+        height: 10px;
+        background-color: #0d6efd;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="mb-0">
+                    <i class="bi bi-bell"></i> Notifications
+                </h1>
+                {% if notifications %}
+                <p class="text-muted mb-0">
+                    <span class="badge bg-primary">{{ unread_notifications_count }} Unread</span>
+                    <span class="badge bg-secondary">{{ notifications.count }} Total</span>
+                </p>
+                {% endif %}
+            </div>
+            {% if notifications %}
+            <div class="btn-group">
+                <form method="post" action="{% url 'myapp:mark_all_read' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-check-all"></i> Mark All as Read
+                    </button>
+                </form>
+                <form method="post" action="{% url 'myapp:clear_all_notifications' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to delete all notifications? This action cannot be undone.')">
+                        <i class="bi bi-trash"></i> Clear All
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Notifications List -->
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        {% if notifications %}
+            {% for notification in notifications %}
+            <div class="card notification-item mb-3 {% if not notification.is_read %}unread{% else %}read{% endif %}" id="notification-{{ notification.id }}">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            {% if notification.notification_type == 'payment_success' %}
+                                <i class="bi bi-check-circle-fill notification-icon payment-success"></i>
+                            {% elif notification.notification_type == 'payment_received' %}
+                                <i class="bi bi-cash-coin notification-icon payment-received"></i>
+                            {% elif notification.notification_type == 'debt_confirmed' %}
+                                <i class="bi bi-check-square notification-icon debt-confirmed"></i>
+                            {% elif notification.notification_type == 'debt_rejected' %}
+                                <i class="bi bi-x-circle notification-icon debt-rejected"></i>
+                            {% elif notification.notification_type == 'debt_added' %}
+                                <i class="bi bi-plus-circle notification-icon debt-added"></i>
+                            {% elif notification.notification_type == 'debt_pending_confirmation' %}
+                                <i class="bi bi-clock-history notification-icon debt-pending-confirmation"></i>
+                            {% elif notification.notification_type == 'debt_paid' %}
+                                <i class="bi bi-check-circle-fill notification-icon payment-success"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle notification-icon"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">
+                                        {% if not notification.is_read %}
+                                        <span class="unread-indicator" title="Unread"></span>
+                                        {% endif %}
+                                        {{ notification.title }}
+                                        {% if not notification.is_read %}
+                                        <span class="badge bg-primary ms-2">Unread</span>
+                                        {% endif %}
+                                    </h5>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    {% if not notification.is_read %}
+                                    <form method="post" action="{% url 'myapp:mark_notification_read' notification.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as read">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'myapp:delete_notification' notification.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger delete-btn" title="Delete notification" onclick="return confirm('Delete this notification?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <p class="mb-2">{{ notification.message }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ notification.created_at|date:"M d, Y - h:i A" }}
+                                    <span class="ms-2">({{ notification.created_at|timesince }} ago)</span>
+                                </small>
+                                <small>
+                                    {% if notification.is_read %}
+                                    <span class="badge bg-secondary">Read</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Unread</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            {% if notification.related_payment %}
+                            <div class="mt-2">
+                                <a href="{% url 'myapp:view_receipt' notification.related_payment.id %}" 
+                                   class="btn btn-sm btn-outline-primary view-notification-link"
+                                   data-notification-id="{{ notification.id }}"
+                                   data-is-read="{{ notification.is_read|lower }}">
+                                    <i class="bi bi-receipt"></i> View Receipt
+                                </a>
+                            </div>
+                            {% elif notification.related_debt %}
+                            <div class="mt-2">
+                                <!-- All debt notifications show View Details button -->
+                                <a href="{% url 'myapp:debt_detail' notification.related_debt.id %}" 
+                                   class="btn btn-sm btn-outline-primary view-notification-link"
+                                   data-notification-id="{{ notification.id }}"
+                                   data-is-read="{{ notification.is_read|lower }}">
+                                    <i class="bi bi-eye"></i> View Details 
+                                </a>
+                                
+                                <!-- Creditor can confirm/reject pending debts -->
+                                {% if notification.notification_type == 'debt_pending_confirmation' and notification.related_debt.status == 'pending' and user.account_type == 'creditor' %}
+                                <form method="post" action="{% url 'myapp:confirm_debt' notification.related_debt.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Confirm this debt?')">
+                                        <i class="bi bi-check-circle"></i> Confirm
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'myapp:reject_debt' notification.related_debt.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Reject this debt?')">
+                                        <i class="bi bi-x-circle"></i> Reject
+                                    </button>
+                                </form>
+                                <small class="text-muted ms-2">
+                                    <i class="bi bi-info-circle"></i> Action required
+                                </small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-bell-slash" style="font-size: 5rem; color: #ccc;"></i>
+                    <h3 class="mt-3">No Notifications</h3>
+                    <p class="text-muted">You don't have any notifications yet.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Back Button -->
+<div class="row mt-4">
+    <div class="col-lg-10 mx-auto">
+        <a href="{% if user.account_type == 'creditor' %}{% url 'myapp:creditor_dashboard' %}{% else %}{% url 'myapp:debtor_dashboard' %}{% endif %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- JavaScript for Auto Mark as Read -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all View buttons (links with class 'view-notification-link')
+    const viewButtons = document.querySelectorAll('.view-notification-link');
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const notificationId = this.dataset.notificationId;
+            const isRead = this.dataset.isRead === 'true';
+            
+            // Only mark as read if it's currently unread
+            if (!isRead && notificationId) {
+                e.preventDefault(); // Prevent immediate navigation
+                
+                const targetUrl = this.href; // Store the target URL
+                
+                // Send AJAX request to mark as read
+                fetch(`/notification/${notificationId}/mark-read/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the notification card visually
+                        const notificationCard = document.querySelector(`#notification-${notificationId}`);
+                        if (notificationCard) {
+                            notificationCard.classList.remove('unread');
+                            notificationCard.classList.add('read');
+                            
+                            // Update badge
+                            const badge = notificationCard.querySelector('.badge.bg-primary');
+                            if (badge && badge.textContent === 'Unread') {
+                                badge.classList.remove('bg-primary');
+                                badge.classList.add('bg-secondary');
+                                badge.textContent = 'Read';
+                            }
+                            
+                            // Remove unread indicator dot
+                            const unreadDot = notificationCard.querySelector('.unread-indicator');
+                            if (unreadDot) {
+                                unreadDot.remove();
+                            }
+                        }
+                        
+                        // Update navbar badge count
+                        const navBadge = document.querySelector('.nav-link .badge.bg-danger');
+                        if (navBadge && data.unread_count > 0) {
+                            navBadge.textContent = data.unread_count;
+                        } else if (navBadge && data.unread_count === 0) {
+                            navBadge.remove();
+                        }
+                        
+                        // Update page header badge
+                        const headerBadge = document.querySelector('.badge.bg-primary');
+                        if (headerBadge) {
+                            headerBadge.textContent = `${data.unread_count} Unread`;
+                        }
+                    }
+                    
+                    // Navigate to the target URL after marking as read
+                    window.location.href = targetUrl;
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                    // Navigate anyway even if there's an error
+                    window.location.href = targetUrl;
+                });
+            }
+            // If already read, just navigate normally (don't prevent default)
+        });
+    });
+});
+</script>
+{% endblock %}

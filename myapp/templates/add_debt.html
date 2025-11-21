@@ -1,0 +1,172 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Add Debt - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Debt</h4>
+            </div>
+            <div class="card-body p-4">
+                <!-- Display Form Errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong><i class="bi bi-exclamation-triangle"></i> Error!</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'myapp:add_debt' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="creditor_username" class="form-label">
+                            <i class="bi bi-person"></i> Creditor Username <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="creditor_username" 
+                               name="creditor_username" 
+                               placeholder="Enter creditor's username"
+                               required
+                               autofocus>
+                        <div class="form-text">Enter the username of the person you owe (creditor).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="type" class="form-label">
+                            <i class="bi bi-tag"></i> Debt Type <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="money" selected>Money</option>
+                            <option value="product">Product</option>
+                        </select>
+                        <div class="form-text">Select whether this is a money debt or product debt.</div>
+                    </div>
+
+                    <!-- Product Name Field (Only visible for Product type) -->
+                    <div class="mb-3" id="product_name_field" style="display: none;">
+                        <label for="product_name" class="form-label">
+                            <i class="bi bi-box"></i> Product Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="product_name" 
+                               name="product_name" 
+                               placeholder="Enter product/item name">
+                        <div class="form-text">Name of the product or item.</div>
+                    </div>
+
+                    <!-- Amount Field (Visible for both types) -->
+                    <div class="mb-3" id="amount_field">
+                        <label for="amount" class="form-label">
+                            <i class="bi bi-cash-coin"></i> Amount <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="amount" 
+                                   name="amount" 
+                                   placeholder="0.00"
+                                   step="0.01"
+                                   min="0.01"
+                                   required>
+                        </div>
+                        <div class="form-text" id="amount_help_text">Enter the amount owed.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-file-text"></i> Description
+                        </label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="4"
+                                  placeholder="Add any additional details about this debt..."></textarea>
+                        <div class="form-text">Optional: Add context, terms, or any relevant information.</div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Note:</strong> After you submit this debt, the creditor will upload proof of release. 
+                        It helps the creditor verify the debt and speeds up the confirmation process.
+                    </div>
+
+                    <!-- JavaScript for Dynamic Field Visibility -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const debtTypeSelect = document.getElementById('type');
+                            const productNameField = document.getElementById('product_name_field');
+                            const productNameInput = document.getElementById('product_name');
+                            const amountHelpText = document.getElementById('amount_help_text');
+
+                            function updateFieldVisibility() {
+                                const debtType = debtTypeSelect.value;
+
+                                if (debtType === 'product') {
+                                    // Show product name field
+                                    productNameField.style.display = 'block';
+                                    productNameInput.setAttribute('required', 'required');
+                                    amountHelpText.textContent = 'Enter the estimated value of the product.';
+                                } else {
+                                    // Hide product name field
+                                    productNameField.style.display = 'none';
+                                    productNameInput.removeAttribute('required');
+                                    productNameInput.value = ''; // Clear the value
+                                    amountHelpText.textContent = 'Enter the amount owed.';
+                                }
+                            }
+
+                            // Initialize on page load
+                            updateFieldVisibility();
+
+                            // Update on change
+                            debtTypeSelect.addEventListener('change', updateFieldVisibility);
+                        });
+                    </script>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'myapp:debtor_dashboard' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Add Debt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="bi bi-info-circle"></i> Tips</h5>
+                <ul class="mb-0">
+                    <li>Make sure the creditor username is correct</li>
+                    <li><strong>Money Debt:</strong> Enter the amount you owe</li>
+                    <li><strong>Product Debt:</strong> Enter the product name and its estimated value</li>
+                    <li>Add a clear description to avoid confusion</li>
+                    <li>The debt will be marked as "Pending" until the creditor confirms it</li>
+                    <li>You can edit or delete pending debts before confirmation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

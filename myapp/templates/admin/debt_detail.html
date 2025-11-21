@@ -1,0 +1,417 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Debt Details - {% if debt.type == 'product' %}{{ debt.product_name }}{% else %}₱{{ debt.amount }}{% endif %} - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-debt-detail {
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .debt-info-card {
+        background: var(--white);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .status-badge {
+        font-size: 1rem;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-weight: 500;
+    }
+    
+    .status-pending_confirmation {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-awaiting_confirmation {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-paid {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .type-badge {
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    
+    .type-money {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .type-product {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .info-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+    
+    .section-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .payment-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .payment-status-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending_debtor_proof {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-pending_creditor_proof {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .amount {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.2rem;
+    }
+    
+    .balance {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .progress-bar-container {
+        background-color: #e9ecef;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .progress-bar-fill {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        height: 100%;
+        transition: width 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .proof-link {
+        display: inline-block;
+        padding: 6px 12px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .proof-link:hover {
+        background: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .user-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .user-link:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+        .debt-info-card {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-debt-detail">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-file-text"></i> Debt Details</h1>
+        <div class="subtitle">
+            {% if debt.type == 'product' %}
+                {{ debt.product_name }}
+            {% else %}
+                ₱{{ debt.amount }}
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Debt Information -->
+        <div class="col-lg-8">
+            <div class="debt-info-card">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <h2 class="mb-0">
+                        {% if debt.type == 'product' %}
+                            {{ debt.product_name }}
+                        {% else %}
+                            ₱{{ debt.amount }}
+                        {% endif %}
+                    </h2>
+                    <span class="status-badge status-{{ debt.status }}">
+                        {{ debt.get_status_display }}
+                    </span>
+                    <span class="type-badge type-{{ debt.type }}">
+                        {{ debt.get_type_display }}
+                    </span>
+                </div>
+                
+                <!-- Payment Progress -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="info-label">Payment Progress</span>
+                        <span class="amount">{{ debt.progress_percentage|floatformat:0 }}%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: {{ debt.progress_percentage|floatformat:0 }}%">
+                            ₱{{ debt.paid_amount }} / ₱{{ debt.amount }}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="balance">Paid: ₱{{ debt.paid_amount }}</span>
+                        <span class="balance">Remaining: ₱{{ debt.balance }}</span>
+                    </div>
+                </div>
+                
+                <!-- Debt Details -->
+                <div class="info-row">
+                    <div class="info-label">Creditor</div>
+                    <div class="info-value">
+                        <a href="{% url 'myapp:admin_user_detail' debt.creditor.id %}" class="user-link">
+                            {{ debt.creditor.full_name|default:debt.creditor.username }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Debtor</div>
+                    <div class="info-value">
+                        <a href="{% url 'myapp:admin_user_detail' debt.debtor.id %}" class="user-link">
+                            {{ debt.debtor.full_name|default:debt.debtor.username }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Total Amount</div>
+                    <div class="info-value amount">₱{{ debt.amount }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Paid Amount</div>
+                    <div class="info-value">₱{{ debt.paid_amount }}</div>
+                </div>
+                
+                <div class="info-row">
+                    <div class="info-label">Remaining Balance</div>
+                    <div class="info-value balance">₱{{ debt.balance }}</div>
+                </div>
+                
+                {% if debt.due_date %}
+                <div class="info-row">
+                    <div class="info-label">Due Date</div>
+                    <div class="info-value">{{ debt.due_date|date:"F d, Y" }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="info-row">
+                    <div class="info-label">Date Created</div>
+                    <div class="info-value">{{ debt.date_created|date:"F d, Y H:i" }}</div>
+                </div>
+                
+                {% if debt.date_paid %}
+                <div class="info-row">
+                    <div class="info-label">Date Paid</div>
+                    <div class="info-value">{{ debt.date_paid|date:"F d, Y H:i" }}</div>
+                </div>
+                {% endif %}
+                
+                {% if debt.notes %}
+                <div class="info-row">
+                    <div class="info-label">Notes</div>
+                    <div class="info-value">{{ debt.notes|linebreaks }}</div>
+                </div>
+                {% endif %}
+                
+                {% if debt.type == 'product' and debt.product_description %}
+                <div class="info-row">
+                    <div class="info-label">Product Description</div>
+                    <div class="info-value">{{ debt.product_description|linebreaks }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="{% url 'myapp:debts_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Debts
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Proofs and Payments -->
+        <div class="col-lg-4">
+            <!-- Debt Proofs -->
+            <div class="section-card">
+                <h5 class="mb-3"><i class="bi bi-file-earmark"></i> Debt Proofs</h5>
+                
+                {% if debt.debt_proof %}
+                <div class="mb-2">
+                    <a href="{% url 'myapp:view_debt_proof' debt.id %}" class="proof-link" target="_blank">
+                        <i class="bi bi-eye"></i> View Debt Proof
+                    </a>
+                    <a href="{% url 'myapp:download_debt_proof' debt.id %}" class="proof-link">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-muted small">No debt proof uploaded</p>
+                {% endif %}
+                
+                {% if debt.creditor_proof %}
+                <div class="mb-2">
+                    <a href="{% url 'myapp:view_creditor_proof' debt.id %}" class="proof-link" target="_blank">
+                        <i class="bi bi-eye"></i> View Creditor Proof
+                    </a>
+                    <a href="{% url 'myapp:download_creditor_proof' debt.id %}" class="proof-link">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-muted small">No creditor proof uploaded</p>
+                {% endif %}
+                
+                {% if debt.payment_proof %}
+                <div class="mb-2">
+                    <a href="{% url 'myapp:view_payment_proof' debt.id %}" class="proof-link" target="_blank">
+                        <i class="bi bi-eye"></i> View Payment Proof
+                    </a>
+                    <a href="{% url 'myapp:download_payment_proof' debt.id %}" class="proof-link">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-muted small">No payment proof uploaded</p>
+                {% endif %}
+            </div>
+            
+            <!-- Payment History -->
+            <div class="section-card">
+                <h5 class="mb-3"><i class="bi bi-credit-card"></i> Payment History ({{ payments.count }})</h5>
+                
+                {% for payment in payments %}
+                <div class="payment-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong>#{{ payment.receipt_no }}</strong>
+                            <span class="payment-status-badge status-{{ payment.status }}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="amount">₱{{ payment.amount }}</div>
+                    </div>
+                    <div class="text-muted small">
+                        Method: {{ payment.get_method_display|title }}<br>
+                        Date: {{ payment.created_at|date:"M d, Y H:i" }}
+                    </div>
+                    {% if payment.reference_number %}
+                    <div class="text-muted small">Ref: {{ payment.reference_number }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-3 text-muted">
+                    <i class="bi bi-credit-card fs-3"></i>
+                    <p class="mt-2 mb-0">No payments recorded</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

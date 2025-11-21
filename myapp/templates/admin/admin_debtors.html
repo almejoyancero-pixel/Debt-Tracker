@@ -1,0 +1,103 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block page_title %}Debtors Management{% endblock %}
+{% block page_description %}View and manage all debtor accounts{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Debtors</h5>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-warning">{{ total_debtors }} Total Debtors</span>
+                    <span class="badge bg-success">{{ debtors|selectattr:"is_active"|list|length }} Active</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Debtor</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Total Debts</th>
+                                <th>Total Owed</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for debtor in debtors %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            {{ debtor.full_name.0|default:debtor.username.0|default:"?"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">{{ debtor.full_name|default:debtor.username }}</div>
+                                            <small class="text-muted">@{{ debtor.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ debtor.email|default:"-" }}</td>
+                                <td>{{ debtor.phone_number|default:"-" }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ debtor.debt_as_debtor.count }}</span>
+                                </td>
+                                <td>
+                                    {% with total=debtor.debt_as_debtor.all %}
+                                        {% if total %}
+                                            ${{ total|aggregate_sum:"amount"|default:"0"|floatformat:2 }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>{{ debtor.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if debtor.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'myapp:admin_user_detail' debtor.id %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-info" onclick="viewDebts({{ debtor.id }})">
+                                            <i class="bi bi-file-text"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="bi bi-person fs-1 text-muted"></i>
+                                    <p class="text-muted mt-2">No debtors found</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewDebts(debtorId) {
+    // Placeholder for view debts functionality
+    console.log('View debts for debtor:', debtorId);
+    alert('View debts functionality will be implemented');
+}
+</script>
+{% endblock %}

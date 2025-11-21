@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}GCash Payment - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gcash-container {
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+    .gcash-header {
+        background: linear-gradient(135deg, #007DFF 0%, #0062CC 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px 15px 0 0;
+        text-align: center;
+    }
+    .gcash-logo {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    .payment-details {
+        background: white;
+        padding: 2rem;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .amount-display {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #007DFF;
+        text-align: center;
+        padding: 1.5rem;
+        background: #F0F8FF;
+        border-radius: 10px;
+        margin: 1rem 0;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .btn-gcash {
+        background: #007DFF;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    .btn-gcash:hover {
+        background: #0062CC;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 125, 255, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gcash-container">
+    <div class="card border-0 shadow-lg">
+        <div class="gcash-header">
+            <div class="gcash-logo">
+                <i class="bi bi-phone"></i>
+            </div>
+            <h2 class="mb-0">GCash Payment</h2>
+            <p class="mb-0 mt-2">Secure Payment Gateway</p>
+        </div>
+        
+        <div class="payment-details">
+            <h5 class="text-center mb-3">Payment Summary</h5>
+            
+            <div class="info-row">
+                <span class="text-muted">Merchant:</span>
+                <strong>{{ debt.creditor.full_name }}</strong>
+            </div>
+            
+            <div class="info-row">
+                <span class="text-muted">Description:</span>
+                <strong>{{ debt.product_name|default:"Debt Payment" }}</strong>
+            </div>
+            
+            <div class="info-row">
+                <span class="text-muted">Debt Type:</span>
+                <strong>{{ debt.get_type_display }}</strong>
+            </div>
+            
+            <div class="amount-display">
+                ₱{{ debt.amount|floatformat:2 }}
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <small>This is a simulated payment. In production, this would connect to the actual GCash API.</small>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-gcash">
+                    <i class="bi bi-check-circle"></i> Confirm & Pay with GCash
+                </button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'myapp:debtor_dashboard' %}" class="text-muted">
+                    <i class="bi bi-arrow-left"></i> Cancel Payment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

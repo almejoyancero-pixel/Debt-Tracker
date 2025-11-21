@@ -1,0 +1,386 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Payments - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-payments {
+        padding: 20px 0;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .payment-card {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .payment-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending_debtor_proof {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-pending_creditor_proof {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .method-badge {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .method-cash {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .method-gcash {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .search-box {
+        background: var(--white);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .stats-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-box {
+        flex: 1;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .amount {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+    }
+    
+    .user-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .user-link:hover {
+        text-decoration: underline;
+    }
+    
+    .proof-link {
+        display: inline-block;
+        padding: 6px 12px;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .proof-link:hover {
+        background: var(--secondary-color);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-approve {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .btn-approve:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+    
+    .btn-reject {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .btn-reject:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-row {
+            flex-direction: column;
+        }
+        
+        .payment-card {
+            padding: 15px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-payments">
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="bi bi-credit-card"></i> Payment Management</h1>
+        <div class="subtitle">Review and approve payment proofs from users</div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ payments.count }}</div>
+            <div class="stat-label">Total Payments</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ pending_count }}</div>
+            <div class="stat-label">Pending Approval</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">₱{{ total_amount|floatformat:2 }}</div>
+            <div class="stat-label">Total Amount</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ completed_count }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter -->
+    <div class="search-box">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search payments by receipt, user, reference...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterStatus">
+                    <option value="">All Status</option>
+                    <option value="pending_debtor_proof">Pending Debtor Proof</option>
+                    <option value="pending_creditor_proof">Pending Creditor Proof</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="filterMethod">
+                    <option value="">All Methods</option>
+                    <option value="cash">Cash</option>
+                    <option value="gcash">GCash</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payments List -->
+    <div class="payments-list" id="paymentsList">
+        {% for payment in payments %}
+        <div class="payment-card" 
+             data-search-text="{{ payment.receipt_no|lower }} {{ payment.payer.full_name|default:payment.payer.username|lower }} {{ payment.reference_number|default:''|lower }}"
+             data-status="{{ payment.status }}"
+             data-method="{{ payment.method }}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h5 class="mb-0">Payment #{{ payment.receipt_no }}</h5>
+                        <span class="status-badge status-{{ payment.status }}">
+                            {{ payment.get_status_display }}
+                        </span>
+                        <span class="method-badge method-{{ payment.method }}">
+                            {{ payment.get_method_display|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="row text-muted small mb-2">
+                        <div class="col-md-6">
+                            <i class="bi bi-person"></i> 
+                            Payer: <a href="{% url 'myapp:admin_user_detail' payment.payer.id %}" class="user-link">{{ payment.payer.full_name|default:payment.payer.username }}</a>
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-file-text"></i> 
+                            Debt: <a href="{% url 'myapp:admin_debt_detail' payment.debt.id %}" class="user-link">
+                                {% if payment.debt.type == 'product' %}
+                                    {{ payment.debt.product_name }}
+                                {% else %}
+                                    ₱{{ payment.debt.amount }}
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar"></i> Created: {{ payment.created_at|date:"M d, Y H:i" }}
+                        {% if payment.reference_number %}
+                            • <i class="bi bi-hash"></i> Ref: {{ payment.reference_number }}
+                        {% endif %}
+                        {% if payment.transaction_id %}
+                            • <i class="bi bi-upc-scan"></i> TXN: {{ payment.transaction_id }}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Proofs -->
+                    <div class="mt-2">
+                        {% if payment.debtor_proof %}
+                            <a href="{{ payment.debtor_proof.url }}" target="_blank" class="proof-link">
+                                <i class="bi bi-eye"></i> View Debtor Proof
+                            </a>
+                        {% endif %}
+                        {% if payment.creditor_proof %}
+                            <a href="{{ payment.creditor_proof.url }}" target="_blank" class="proof-link">
+                                <i class="bi bi-eye"></i> View Creditor Proof
+                            </a>
+                        {% endif %}
+                        {% if not payment.debtor_proof and not payment.creditor_proof %}
+                            <span class="text-muted small">No proofs uploaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4 text-end">
+                    <div class="amount">₱{{ payment.amount }}</div>
+                    <div class="text-muted small mb-2">
+                        {% if payment.verified_at %}
+                            Verified: {{ payment.verified_at|date:"M d, Y H:i" }}
+                        {% else %}
+                            Not verified
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    {% if payment.status == 'pending_creditor_proof' %}
+                    <div class="action-buttons">
+                        <form method="post" action="{% url 'myapp:admin_approve_payment' payment.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm btn-approve" onclick="return confirm('Are you sure you want to approve this payment?')">
+                                <i class="bi bi-check-circle"></i> Approve
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'myapp:admin_reject_payment' payment.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm btn-reject" onclick="return confirm('Are you sure you want to reject this payment?')">
+                                <i class="bi bi-x-circle"></i> Reject
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="bi bi-credit-card fs-1 text-muted"></i>
+            <h4 class="mt-3 text-muted">No payments found</h4>
+            <p class="text-muted">There are no payment records in the system yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterMethod = document.getElementById('filterMethod');
+    const paymentsList = document.getElementById('paymentsList');
+    const paymentCards = paymentsList.querySelectorAll('.payment-card');
+    
+    function filterPayments() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusFilter = filterStatus.value;
+        const methodFilter = filterMethod.value;
+        
+        paymentCards.forEach(card => {
+            const searchText = card.dataset.searchText;
+            const status = card.dataset.status;
+            const method = card.dataset.method;
+            
+            let matchesSearch = searchText.includes(searchTerm);
+            let matchesStatus = !statusFilter || status === statusFilter;
+            let matchesMethod = !methodFilter || method === methodFilter;
+            
+            card.style.display = matchesSearch && matchesStatus && matchesMethod ? 'block' : 'none';
+        });
+    }
+    
+    searchInput.addEventListener('input', filterPayments);
+    filterStatus.addEventListener('change', filterPayments);
+    filterMethod.addEventListener('change', filterPayments);
+});
+</script>
+{% endblock %}

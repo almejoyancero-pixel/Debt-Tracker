@@ -1,0 +1,134 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Payment Successful - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        max-width: 700px;
+        margin: 3rem auto;
+    }
+    .success-icon {
+        font-size: 5rem;
+        color: #28a745;
+        animation: scaleIn 0.5s ease-in-out;
+    }
+    @keyframes scaleIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    .transaction-card {
+        border: 2px solid #28a745;
+        border-radius: 15px;
+    }
+    .transaction-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 13px 13px 0 0;
+        text-align: center;
+    }
+    .transaction-body {
+        padding: 2rem;
+        background: white;
+    }
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    .amount-highlight {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+        text-align: center;
+        padding: 1.5rem;
+        background: #d4edda;
+        border-radius: 10px;
+        margin: 1rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <!-- Success Icon -->
+    <div class="text-center mb-4">
+        <i class="bi bi-check-circle-fill success-icon"></i>
+        <h1 class="mt-3 text-success">Payment Successful!</h1>
+        <p class="text-muted">Your payment has been processed successfully</p>
+    </div>
+
+    <!-- Transaction Details Card -->
+    <div class="card transaction-card shadow-lg">
+        <div class="transaction-header">
+            <h3 class="mb-0"><i class="bi bi-receipt"></i> Transaction Summary</h3>
+        </div>
+        
+        <div class="transaction-body">
+            <!-- Amount -->
+            <div class="amount-highlight">
+                ₱{{ payment.amount|floatformat:2 }}
+            </div>
+
+            <!-- Transaction Details -->
+            <div class="detail-row">
+                <span class="text-muted">Transaction ID:</span>
+                <strong>{{ payment.transaction_id }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-muted">Receipt No:</span>
+                <strong>{{ payment.receipt_no }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-muted">Payment Method:</span>
+                <strong>{{ payment.get_method_display }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-muted">Date & Time:</span>
+                <strong>{{ payment.created_at|date:"F d, Y - g:i A" }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-muted">Paid To:</span>
+                <strong>{{ payment.debt.creditor.full_name }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span class="text-muted">Status:</span>
+                <span class="badge bg-success">PAID</span>
+            </div>
+
+            <!-- Notification Message -->
+            <div class="alert alert-success mt-4">
+                <i class="bi bi-bell-fill"></i>
+                <strong>Notification Sent!</strong>
+                <p class="mb-0 mt-2">Both you and {{ payment.debt.creditor.full_name }} have been notified about this payment.</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 mt-4">
+                <a href="{% url 'myapp:view_receipt' payment.id %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-receipt"></i> View Receipt
+                </a>
+                {% if payment.receipt_file %}
+                <a href="{% url 'myapp:download_receipt_pdf' payment.id %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-download"></i> Download PDF Receipt
+                </a>
+                {% endif %}
+                <a href="{% url 'myapp:debtor_dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

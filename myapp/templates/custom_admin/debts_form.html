@@ -1,0 +1,159 @@
+{% extends 'custom_admin/base.html' %}
+{% load static %}
+
+{% block custom_admin_content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ page_title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation">
+                    {% csrf_token %}
+                    
+                    {% if form_action == 'add' %}
+                        <!-- Creditor Field -->
+                        <div class="mb-3">
+                            <label for="creditor" class="form-label">Creditor <span class="text-danger">*</span></label>
+                            <select class="form-select" id="creditor" name="creditor" required>
+                                <option value="">-- Select Creditor --</option>
+                                {% for creditor in creditors %}
+                                <option value="{{ creditor.id }}">{{ creditor.full_name|default:creditor.username }} (@{{ creditor.username }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Debtor Field -->
+                        <div class="mb-3">
+                            <label for="debtor" class="form-label">Debtor <span class="text-danger">*</span></label>
+                            <select class="form-select" id="debtor" name="debtor" required>
+                                <option value="">-- Select Debtor --</option>
+                                {% for debtor in debtors %}
+                                <option value="{{ debtor.id }}">{{ debtor.full_name|default:debtor.username }} (@{{ debtor.username }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Debt Type Field -->
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Debt Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required onchange="toggleDebtFields()">
+                                <option value="">-- Select Type --</option>
+                                <option value="money">Money</option>
+                                <option value="product">Product</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Amount Field (for money) -->
+                        <div class="mb-3" id="amount-field" style="display: none;">
+                            <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span>
+                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0">
+                            </div>
+                        </div>
+                        
+                        <!-- Product Name Field (for product) -->
+                        <div class="mb-3" id="product-field" style="display: none;">
+                            <label for="product_name" class="form-label">Product Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="product_name" name="product_name">
+                        </div>
+                    {% else %}
+                        <!-- Edit Mode - Read Only Creditor/Debtor -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Creditor</label>
+                                <input type="text" class="form-control" value="{{ debt.creditor.full_name|default:debt.creditor.username }}" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Debtor</label>
+                                <input type="text" class="form-control" value="{{ debt.debtor.full_name|default:debt.debtor.username }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Debt Type Field -->
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Debt Type</label>
+                            <select class="form-select" id="type" name="type" onchange="toggleDebtFields()">
+                                <option value="money" {% if debt.type == 'money' %}selected{% endif %}>Money</option>
+                                <option value="product" {% if debt.type == 'product' %}selected{% endif %}>Product</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Amount Field (for money) -->
+                        <div class="mb-3" id="amount-field" {% if debt.type != 'money' %}style="display: none;"{% endif %}>
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span>
+                                <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="0" value="{{ debt.amount|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <!-- Product Name Field (for product) -->
+                        <div class="mb-3" id="product-field" {% if debt.type != 'product' %}style="display: none;"{% endif %}>
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="product_name" name="product_name" value="{{ debt.product_name|default:'' }}">
+                        </div>
+                        
+                        <!-- Status Field -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="pending_confirmation" {% if debt.status == 'pending_confirmation' %}selected{% endif %}>Pending Confirmation</option>
+                                <option value="active" {% if debt.status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="paid" {% if debt.status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="rejected" {% if debt.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Description Field -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ debt.description|default:'' }}</textarea>
+                        <small class="form-text text-muted">Additional details about the debt</small>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 
+                            {% if form_action == 'add' %}Create Debt{% else %}Update Debt{% endif %}
+                        </button>
+                        <a href="{% url 'myapp:debts_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDebtFields() {
+    const type = document.getElementById('type').value;
+    const amountField = document.getElementById('amount-field');
+    const productField = document.getElementById('product-field');
+    
+    if (type === 'money') {
+        amountField.style.display = 'block';
+        productField.style.display = 'none';
+        document.getElementById('amount').required = true;
+        document.getElementById('product_name').required = false;
+    } else if (type === 'product') {
+        amountField.style.display = 'none';
+        productField.style.display = 'block';
+        document.getElementById('amount').required = false;
+        document.getElementById('product_name').required = true;
+    } else {
+        amountField.style.display = 'none';
+        productField.style.display = 'none';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', toggleDebtFields);
+</script>
+{% endblock %}

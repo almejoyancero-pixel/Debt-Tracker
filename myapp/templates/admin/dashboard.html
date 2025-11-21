@@ -1,0 +1,400 @@
+{% extends 'admin/admin_dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+<style>
+    .admin-dashboard {
+        padding: 20px 0;
+    }
+    
+    .stat-card {
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: white;
+        color: #333;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 1.8rem;
+        color: white;
+    }
+    
+    .stat-card .stat-icon {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+    
+    .stat-card.card-purple .stat-icon {
+        background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+    }
+    
+    .stat-card.card-green .stat-icon {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .stat-card.card-orange .stat-icon {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    }
+    
+    .stat-card.card-red .stat-icon {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .stat-description {
+        font-size: 0.85rem;
+        color: #9ca3af;
+        margin-top: 8px;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .admin-header h1 {
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .admin-header .subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .chart-controls {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .chart-controls select,
+    .chart-controls input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .chart-legend {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 20px;
+    }
+    
+    .dashboard-header-section {
+        background: linear-gradient(135deg, #00357a 0%, #00357a 100%);
+        color: white;
+        padding: 40px 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-header-section h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    
+    .dashboard-header-section .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+    
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .admin-header {
+            padding: 20px;
+        }
+        
+        .dashboard-header-section {
+            padding: 30px 20px;
+        }
+        
+        .dashboard-header-section h1 {
+            font-size: 1.8rem;
+        }
+        
+        .chart-controls {
+            flex-direction: column;
+        }
+        
+        .chart-controls select,
+        .chart-controls input {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-dashboard">
+    <!-- Dashboard Header with Red Background -->
+    <div class="dashboard-header-section">
+        <h1><i class="bi bi-shield-check"></i> Admin Dashboard</h1>
+        <div class="subtitle">System Overview & Analytics</div>
+    </div>
+    
+    <!-- Key Statistics Cards -->
+    <div class="row mb-4 justify-content-center">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-description">All registered users</div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card card-purple">
+                <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
+                <div class="stat-label">Creditors</div>
+                <div class="stat-number">{{ total_creditors }}</div>
+                <div class="stat-description">Active lenders</div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stat-card card-green">
+                <div class="stat-icon"><i class="bi bi-person-x-fill"></i></div>
+                <div class="stat-label">Debtors</div>
+                <div class="stat-number">{{ total_debtors }}</div>
+                <div class="stat-description">Active borrowers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-6 col-md-6 mb-3">
+            <div class="stat-card card-orange">
+                <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+                <div class="stat-label">Total Amount Borrowed</div>
+                <div class="stat-number">₱{{ total_amount_borrowed|floatformat:2 }}</div>
+                <div class="stat-description">Total money in system</div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 mb-3">
+            <div class="stat-card card-red">
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-label">Total Amount Paid</div>
+                <div class="stat-number">₱{{ total_amount_paid|floatformat:2 }}</div>
+                <div class="stat-description">Completed payments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Creditors vs Debtors Chart -->
+    <div class="chart-card">
+        <h3 class="mb-3"><i class="bi bi-graph-up"></i> Creditors vs Debtors Trend</h3>
+        
+        <!-- Chart Controls -->
+        <div class="chart-controls">
+            <label for="timeframe" style="margin: 0;">View by:</label>
+            <select id="timeframe" onchange="updateChart()">
+                <option value="daily">Daily</option>
+                <option value="monthly" selected>Monthly</option>
+                <option value="yearly">Yearly</option>
+            </select>
+
+            <label for="startDate" style="margin: 0;">Start Date:</label>
+            <input type="date" id="startDate" onchange="updateChart()">
+
+            <label for="endDate" style="margin: 0;">End Date:</label>
+            <input type="date" id="endDate" onchange="updateChart()">
+
+            <button class="btn btn-sm btn-primary" onclick="resetChart()">
+                <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-container">
+            <canvas id="creditorDebtorChart"></canvas>
+        </div>
+
+        <!-- Legend -->
+        <div class="chart-legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #B36BFF;"></div>
+                <span>Creditors</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF6B9D;"></div>
+                <span>Debtors</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    let chart = null;
+
+    function initChart() {
+        const ctx = document.getElementById('creditorDebtorChart').getContext('2d');
+        
+        // Sample data - will be replaced with actual data from view
+        const chartData = {
+            labels: {{ chart_labels|safe }},
+            datasets: [
+                {
+                    label: 'Creditors',
+                    data: {{ creditors_data|safe }},
+                    borderColor: '#B36BFF',
+                    backgroundColor: 'rgba(179, 107, 255, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#B36BFF'
+                },
+                {
+                    label: 'Debtors',
+                    data: {{ debtors_data|safe }},
+                    borderColor: '#FF6B9D',
+                    backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#FF6B9D'
+                }
+            ]
+        };
+
+        if (chart) {
+            chart.destroy();
+        }
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function updateChart() {
+        const timeframe = document.getElementById('timeframe').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // Send request to backend to get filtered data
+        const params = new URLSearchParams({
+            timeframe: timeframe,
+            start_date: startDate,
+            end_date: endDate
+        });
+
+        fetch(`{% url 'myapp:admin_dashboard' %}?${params}`)
+            .then(response => response.text())
+            .then(html => {
+                // Parse and update chart data
+                initChart();
+            });
+    }
+
+    function resetChart() {
+        document.getElementById('timeframe').value = 'monthly';
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        updateChart();
+    }
+
+    // Initialize chart on page load
+    document.addEventListener('DOMContentLoaded', initChart);
+</script>
+{% endblock %}

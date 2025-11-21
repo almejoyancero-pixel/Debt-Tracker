@@ -1,0 +1,160 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Edit Debt - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Debt</h4>
+            </div>
+            <div class="card-body p-4">
+                <!-- Display Form Errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong><i class="bi bi-exclamation-triangle"></i> Error!</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="creditor_username" class="form-label">
+                            <i class="bi bi-person"></i> Creditor Username <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="creditor_username" 
+                               name="creditor_username" 
+                               value="{{ debt.creditor.username }}"
+                               placeholder="Enter creditor's username"
+                               required>
+                        <div class="form-text">Username of the person you owe (creditor).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="type" class="form-label">
+                            <i class="bi bi-tag"></i> Debt Type <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="money" {% if debt.type == 'money' %}selected{% endif %}>Money</option>
+                            <option value="product" {% if debt.type == 'product' %}selected{% endif %}>Product</option>
+                        </select>
+                        <div class="form-text">Select whether this is a money debt or product debt.</div>
+                    </div>
+
+                    <!-- Product Name Field (Only visible for Product type) -->
+                    <div class="mb-3" id="product_name_field" style="display: none;">
+                        <label for="product_name" class="form-label">
+                            <i class="bi bi-box"></i> Product Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="product_name" name="product_name" 
+                               value="{{ debt.product_name|default:'' }}" placeholder="Enter product/item name">
+                        <div class="form-text">Name of the product or item.</div>
+                    </div>
+
+                    <!-- Amount Field (Visible for both types) -->
+                    <div class="mb-3" id="amount_field">
+                        <label for="amount" class="form-label">
+                            <i class="bi bi-cash-coin"></i> Amount <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" class="form-control" id="amount" name="amount" 
+                                   value="{{ debt.amount }}" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-text" id="amount_help_text">Enter the amount owed.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-file-text"></i> Description
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="4" 
+                                  placeholder="Add any additional details about this debt...">{{ debt.description|default:'' }}</textarea>
+                        <div class="form-text">Optional: Add context, terms, or any relevant information.</div>
+                    </div>
+
+                    <!-- JavaScript for Dynamic Field Visibility -->
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const debtTypeSelect = document.getElementById('type');
+                            const productNameField = document.getElementById('product_name_field');
+                            const productNameInput = document.getElementById('product_name');
+                            const amountHelpText = document.getElementById('amount_help_text');
+
+                            function updateFieldVisibility() {
+                                const debtType = debtTypeSelect.value;
+
+                                if (debtType === 'product') {
+                                    // Show product name field
+                                    productNameField.style.display = 'block';
+                                    productNameInput.setAttribute('required', 'required');
+                                    amountHelpText.textContent = 'Enter the estimated value of the product.';
+                                } else {
+                                    // Hide product name field
+                                    productNameField.style.display = 'none';
+                                    productNameInput.removeAttribute('required');
+                                    productNameInput.value = ''; // Clear the value
+                                    amountHelpText.textContent = 'Enter the amount owed.';
+                                }
+                            }
+
+                            // Initialize on page load
+                            updateFieldVisibility();
+
+                            // Update on change
+                            debtTypeSelect.addEventListener('change', updateFieldVisibility);
+                        });
+                    </script>
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Status</label>
+                        <div>
+                            {% if debt.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% elif debt.status == 'confirmed' %}
+                                <span class="badge bg-info">Confirmed</span>
+                            {% elif debt.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif debt.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">Status cannot be changed here. Use dashboard actions to update status.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Created</label>
+                        <div>{{ debt.date_created|date:"F d, Y - g:i A" }}</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'myapp:debtor_dashboard' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="bi bi-check-circle"></i> Update Debt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

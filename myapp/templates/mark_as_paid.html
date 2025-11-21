@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Record Payment - Debt Tracker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-cash-coin"></i> Record Payment
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>Payment Summary</h5>
+                        <ul class="mb-0">
+                            <li>Debtor: <strong>{{ debt.debtor.full_name }}</strong></li>
+                            <li>Total Amount: <strong>₱{{ debt.amount|floatformat:2 }}</strong></li>
+                            <li>Paid So Far: <strong>₱{{ debt.paid_amount|floatformat:2 }}</strong></li>
+                            <li>Remaining Balance: <strong class="{% if debt.balance <= 0 %}text-success{% else %}text-warning{% endif %}">₱{{ debt.balance|floatformat:2 }}</strong></li>
+                        </ul>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_payment_amount" class="form-label">Payment Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="id_payment_amount" 
+                                       name="payment_amount" 
+                                       step="1" 
+                                       min="0" 
+                                       max="{{ debt.balance|floatformat:0 }}" 
+                                       value="{{ debt.balance|floatformat:0 }}" 
+                                       placeholder="Enter amount"
+                                       required>
+                            </div>
+                            <div class="form-text">Enter the payment amount (max: ₱{{ debt.balance|floatformat:2 }})</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_creditor_proof" class="form-label">
+                                <i class="bi bi-camera"></i> Proof of Receipt (Cash Payment) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="id_creditor_proof" 
+                                       name="creditor_proof" 
+                                       accept="image/*"
+                                       capture="environment"
+                                       required
+                                       onchange="previewCreditorImage(event)">
+                                <button class="btn btn-outline-primary" type="button" onclick="document.getElementById('id_creditor_proof').click()">
+                                    <i class="bi bi-camera-fill"></i> Take Photo or Upload
+                                </button>
+                            </div>
+                            <div class="form-text" id="fileInfoText">
+                                <i class="bi bi-info-circle"></i> 
+                                Take a photo using your camera or upload an existing image (max 10MB)
+                            </div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="mb-3" id="creditorImagePreviewContainer" style="display: none;">
+                            <label class="form-label">Preview:</label>
+                            <div class="border rounded p-3 text-center bg-light">
+                                <img id="creditorImagePreview" src="" alt="Preview" class="img-fluid" style="max-height: 300px; border-radius: 8px;">
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearCreditorImage()">
+                                        <i class="bi bi-x-circle"></i> Remove Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'myapp:creditor_dashboard' %}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Record Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Client-side validation for payment amount
+const amountInput = document.getElementById('id_payment_amount');
+const maxAmount = Math.floor(parseFloat('{{ debt.balance }}'));
+
+// Remove decimals on input
+amountInput.addEventListener('input', function() {
+    // Allow empty field for easier editing
+    if (this.value === '') return;
+    
+    // Remove decimals if entered
+    if (this.value.includes('.')) {
+        this.value = Math.floor(parseFloat(this.value));
+    }
+    
+    // Auto-correct if exceeds max
+    let value = parseInt(this.value) || 0;
+    if (value > maxAmount) {
+        this.value = maxAmount;
+    }
+});
+
+// Preview creditor image before upload
+function previewCreditorImage(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('creditorImagePreviewContainer');
+    const preview = document.getElementById('creditorImagePreview');
+    const fileInfoText = document.getElementById('fileInfoText');
+    
+    if (file) {
+        // Validate file size (10MB max)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        if (file.size > maxSize) {
+            alert('File size exceeds 10MB. Please choose a smaller file.');
+            event.target.value = '';
+            previewContainer.style.display = 'none';
+            fileInfoText.innerHTML = '<i class="bi bi-info-circle"></i> Take a photo using your camera or upload an existing image (max 10MB)';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file.');
+            event.target.value = '';
+            previewContainer.style.display = 'none';
+            fileInfoText.innerHTML = '<i class="bi bi-info-circle"></i> Take a photo using your camera or upload an existing image (max 10MB)';
+            return;
+        }
+        
+        // Show file info
+        const fileName = file.name;
+        const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+        fileInfoText.innerHTML = `<i class="bi bi-check-circle text-success"></i> <strong>File selected:</strong> ${fileName} (${fileSize} MB)`;
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.style.display = 'none';
+        fileInfoText.innerHTML = '<i class="bi bi-info-circle"></i> Take a photo using your camera or upload an existing image (max 10MB)';
+    }
+}
+
+// Clear selected creditor image
+function clearCreditorImage() {
+    const fileInput = document.getElementById('id_creditor_proof');
+    const previewContainer = document.getElementById('creditorImagePreviewContainer');
+    const preview = document.getElementById('creditorImagePreview');
+    const fileInfoText = document.getElementById('fileInfoText');
+    
+    fileInput.value = '';
+    preview.src = '';
+    previewContainer.style.display = 'none';
+    fileInfoText.innerHTML = '<i class="bi bi-info-circle"></i> Take a photo using your camera or upload an existing image (max 10MB)';
+}
+
+// File upload validation and preview
+const fileInput = document.getElementById('id_creditor_proof');
+const form = document.querySelector('form');
+
+// Form submission validation
+form.addEventListener('submit', function(e) {
+    // Check file upload
+    if (!fileInput.files || fileInput.files.length === 0) {
+        e.preventDefault();
+        alert('Please take a photo or upload proof of receipt before submitting.');
+        fileInput.focus();
+        return false;
+    }
+    
+    // Check payment amount
+    const amount = parseInt(amountInput.value) || 0;
+    if (amount < 1) {
+        e.preventDefault();
+        alert('Payment amount must be at least ₱1.');
+        amountInput.focus();
+        return false;
+    }
+    
+    if (amount > maxAmount) {
+        e.preventDefault();
+        alert('Payment amount cannot exceed ₱' + maxAmount + '.');
+        amountInput.focus();
+        return false;
+    }
+});
+</script>
+{% endblock %}

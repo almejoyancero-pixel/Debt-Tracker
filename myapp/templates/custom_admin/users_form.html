@@ -1,0 +1,96 @@
+{% extends 'custom_admin/base.html' %}
+{% load static %}
+
+{% block custom_admin_content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ page_title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation">
+                    {% csrf_token %}
+                    
+                    {% if form_action == 'add' %}
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <small class="form-text text-muted">Unique identifier for login</small>
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <small class="form-text text-muted">Minimum 8 characters recommended</small>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Full Name Field -->
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                            value="{{ user.full_name|default:'' }}" required>
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                            value="{{ user.email|default:'' }}">
+                    </div>
+                    
+                    <!-- Account Type Field -->
+                    {% if form_action == 'add' and not account_type %}
+                    <div class="mb-3">
+                        <label for="account_type" class="form-label">Account Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="account_type" name="account_type" required>
+                            <option value="">-- Select Account Type --</option>
+                            <option value="creditor">Creditor</option>
+                            <option value="debtor">Debtor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    {% elif form_action == 'edit' %}
+                    <div class="mb-3">
+                        <label for="account_type" class="form-label">Account Type</label>
+                        <select class="form-select" id="account_type" name="account_type">
+                            <option value="creditor" {% if user.account_type == 'creditor' %}selected{% endif %}>Creditor</option>
+                            <option value="debtor" {% if user.account_type == 'debtor' %}selected{% endif %}>Debtor</option>
+                            <option value="admin" {% if user.account_type == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Active Status Field -->
+                    {% if form_action == 'edit' %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                {% if user.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Active
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Uncheck to deactivate this account</small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 
+                            {% if form_action == 'add' %}Create User{% else %}Update User{% endif %}
+                        </button>
+                        <a href="{% if account_type == 'creditor' %}{% url 'myapp:creditors_list' %}{% elif account_type == 'debtor' %}{% url 'myapp:debtors_list' %}{% else %}{% url 'myapp:users_list' %}{% endif %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

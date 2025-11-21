@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Receipt - Debt Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .receipt-container {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+    .receipt-card {
+        border: 2px solid #013A63;
+        border-radius: 10px;
+    }
+    .receipt-header {
+        background: linear-gradient(135deg, #013A63 0%, #004E89 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px 8px 0 0;
+        text-align: center;
+    }
+    .receipt-body {
+        padding: 2rem;
+        background-color: #fff;
+    }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .receipt-row:last-child {
+        border-bottom: none;
+    }
+    .receipt-label {
+        font-weight: 600;
+        color: #0B1D26;
+    }
+    .receipt-value {
+        color: #013A63;
+        font-weight: 500;
+    }
+    .receipt-amount {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #A8E6CF;
+        text-align: center;
+        padding: 1.5rem;
+        background-color: rgba(168, 230, 207, 0.1);
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    .receipt-footer {
+        background-color: #C8F2C4;
+        padding: 1.5rem;
+        border-radius: 0 0 8px 8px;
+        text-align: center;
+    }
+    .status-badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+    }
+    @media print {
+        .no-print {
+            display: none;
+        }
+        .receipt-card {
+            border: 2px solid #000;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receipt-container">
+    <div class="card receipt-card shadow-lg">
+        <!-- Receipt Header -->
+        <div class="receipt-header">
+            <h1 class="mb-2"><i class="bi bi-receipt"></i> Payment Receipt</h1>
+            <p class="mb-0">Receipt No: <strong>{{ payment.receipt_no }}</strong></p>
+            <p class="mb-0">Transaction ID: <strong>{{ payment.transaction_id }}</strong></p>
+        </div>
+
+        <!-- Receipt Body -->
+        <div class="receipt-body">
+            <!-- Payment Status -->
+            <div class="text-center mb-4">
+                {% if payment.status == 'verified' %}
+                    <span class="badge bg-success status-badge">
+                        <i class="bi bi-check-circle-fill"></i> Verified
+                    </span>
+                {% elif payment.status == 'pending' %}
+                    <span class="badge bg-warning text-dark status-badge">
+                        <i class="bi bi-clock"></i> Pending Verification
+                    </span>
+                {% elif payment.status == 'rejected' %}
+                    <span class="badge bg-danger status-badge">
+                        <i class="bi bi-x-circle"></i> Rejected
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Payment Amount -->
+            <div class="receipt-amount">
+                ₱{{ payment.amount|floatformat:2 }}
+            </div>
+
+            <!-- Payment Details -->
+            <div class="mt-4">
+                <h5 class="mb-3 fw-bold" style="color: #013A63;">Payment Information</h5>
+                
+                <div class="receipt-row">
+                    <span class="receipt-label">Payment Method:</span>
+                    <span class="receipt-value">{{ payment.get_method_display }}</span>
+                </div>
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Payment Date:</span>
+                    <span class="receipt-value">{{ payment.created_at|date:"F d, Y - g:i A" }}</span>
+                </div>
+
+                {% if payment.reference_number %}
+                <div class="receipt-row">
+                    <span class="receipt-label">Reference Number:</span>
+                    <span class="receipt-value">{{ payment.reference_number }}</span>
+                </div>
+                {% endif %}
+
+                {% if payment.verified_at %}
+                <div class="receipt-row">
+                    <span class="receipt-label">Verified Date:</span>
+                    <span class="receipt-value">{{ payment.verified_at|date:"F d, Y - g:i A" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Debt Information -->
+            <div class="mt-4">
+                <h5 class="mb-3 fw-bold" style="color: #013A63;">Debt Information</h5>
+                
+                <div class="receipt-row">
+                    <span class="receipt-label">Debt ID:</span>
+                    <span class="receipt-value">#{{ payment.debt.id }}</span>
+                </div>
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Debt Type:</span>
+                    <span class="receipt-value">{{ payment.debt.get_type_display }}</span>
+                </div>
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Original Amount:</span>
+                    <span class="receipt-value">₱{{ payment.debt.amount|floatformat:2 }}</span>
+                </div>
+
+                {% if payment.debt.product_name %}
+                <div class="receipt-row">
+                    <span class="receipt-label">Product/Item:</span>
+                    <span class="receipt-value">{{ payment.debt.product_name }}</span>
+                </div>
+                {% endif %}
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Debt Status:</span>
+                    <span class="receipt-value">
+                        {% if payment.debt.status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">{{ payment.debt.get_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Party Information -->
+            <div class="mt-4">
+                <h5 class="mb-3 fw-bold" style="color: #013A63;">Parties Involved</h5>
+                
+                <div class="receipt-row">
+                    <span class="receipt-label">Paid By (Debtor):</span>
+                    <span class="receipt-value">
+                        {{ payment.payer.full_name }} (@{{ payment.payer.username }})
+                    </span>
+                </div>
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Paid To (Creditor):</span>
+                    <span class="receipt-value">
+                        {{ payment.debt.creditor.full_name }} (@{{ payment.debt.creditor.username }})
+                    </span>
+                </div>
+            </div>
+
+            <!-- Payment Proof -->
+            {% if payment.proof %}
+            <div class="mt-4">
+                <h5 class="mb-3 fw-bold" style="color: #013A63;">Payment Proof</h5>
+                <div class="text-center">
+                    <a href="{{ payment.proof.url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark-image"></i> View Proof of Payment
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Receipt Footer -->
+        <div class="receipt-footer">
+            <p class="mb-2 fw-bold" style="color: #013A63;">Thank you for your payment!</p>
+            <small class="text-muted">This is an official receipt from Debt Tracker System</small>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center mt-4 no-print">
+        <button onclick="window.print()" class="btn btn-primary btn-lg me-2">
+            <i class="bi bi-printer"></i> Print Receipt
+        </button>
+        
+        {% if payment.receipt_file %}
+        <a href="{% url 'myapp:download_receipt_pdf' payment.id %}" class="btn btn-success btn-lg me-2">
+            <i class="bi bi-download"></i> Download PDF
+        </a>
+        {% endif %}
+        
+        {% if user == payment.debt.creditor %}
+            <a href="{% url 'myapp:creditor_dashboard' %}" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        {% elif user == payment.payer %}
+            <a href="{% url 'myapp:debtor_dashboard' %}" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block page_title %}Users Management{% endblock %}
+{% block page_description %}Manage all system users and their accounts{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Users</h5>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary">{{ total_users }} Total Users</span>
+                    <span class="badge bg-success">{{ users|selectattr:"is_superuser"|list|length }} Superusers</span>
+                    <span class="badge bg-info">{{ users|selectattr:"is_staff"|list|length }} Staff</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Account Type</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            {{ user.full_name.0|default:user.username.0|default:"?"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">{{ user.full_name|default:user.username }}</div>
+                                            <small class="text-muted">@{{ user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email|default:"-" }}</td>
+                                <td>
+                                    {% if user.account_type == 'creditor' %}
+                                        <span class="badge bg-info">Creditor</span>
+                                    {% elif user.account_type == 'debtor' %}
+                                        <span class="badge bg-warning">Debtor</span>
+                                    {% elif user.account_type == 'admin' %}
+                                        <span class="badge bg-secondary">Admin</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_superuser %}
+                                        <span class="badge bg-danger">Superuser</span>
+                                    {% elif user.is_staff %}
+                                        <span class="badge bg-primary">Staff</span>
+                                    {% elif user.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'myapp:admin_user_detail' user.id %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button class="btn btn-outline-secondary" onclick="editUser({{ user.id }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="bi bi-people fs-1 text-muted"></i>
+                                    <p class="text-muted mt-2">No users found</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editUser(userId) {
+    // Placeholder for edit user functionality
+    console.log('Edit user:', userId);
+    alert('Edit functionality will be implemented');
+}
+</script>
+{% endblock %}
