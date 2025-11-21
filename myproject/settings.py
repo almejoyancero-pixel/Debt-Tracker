@@ -3,6 +3,7 @@ Django settings for myproject project.
 """
 
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -142,4 +143,9 @@ LOGIN_REDIRECT_URL = '/dashboard/'  # After successful login
 LOGOUT_REDIRECT_URL = '/'  # After logout
 
 import dj_database_url
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    db_from_env = dj_database_url.config(conn_max_age=600, ssl_require=True)
+    if db_from_env:
+        DATABASES['default'] = db_from_env
