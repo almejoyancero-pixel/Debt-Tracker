@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -----------------------
 SECRET_KEY = 'django-insecure-!cofqfh9#v9d_bpck*g98stlug(r6v)p+e+tu!%!dg(o*i=!@2'
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 # -----------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -63,7 +64,7 @@ ROOT_URLCONF = 'myproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],   # ✅ centralized templates folder
+        'DIRS': [BASE_DIR / "templates"],   # centralized templates folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -107,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # LANGUAGE & TIMEZONE
 # -----------------------
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Manila'   # ✅ para PH time
+TIME_ZONE = 'Asia/Manila'   # para PH time
 USE_I18N = True
 USE_TZ = True
 
@@ -118,6 +119,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # -----------------------
 # MEDIA FILES
@@ -138,3 +140,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "YOUR_CLIENT_SECRET"
 LOGIN_URL = '/'  # Redirect to home page (index) for login
 LOGIN_REDIRECT_URL = '/dashboard/'  # After successful login
 LOGOUT_REDIRECT_URL = '/'  # After logout
+
+import dj_database_url
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
