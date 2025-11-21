@@ -87,9 +87,10 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # -----------------------
 # DATABASE
 # -----------------------
+# Use DATABASE_URL if provided (e.g., in production), otherwise fallback to local SQLite.
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
     )
 }
 
@@ -118,7 +119,7 @@ USE_TZ = True
 # STATIC FILES
 # -----------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "myapp" / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
