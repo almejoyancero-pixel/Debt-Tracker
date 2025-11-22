@@ -41,7 +41,7 @@
         
         /* Sidebar Styles */
         .sidebar {
-            width: 70px; /* collapsed by default (desktop) */
+            width: 70px; /* collapsed by default */
             background: var(--sidebar-bg);
             color: var(--white);
             position: fixed;
@@ -51,7 +51,7 @@
             box-shadow: 2px 0 6px rgba(0,0,0,0.1);
             left: 0;
             top: 0;
-            transition: width 0.3s ease, transform 0.3s ease;
+            transition: width 0.3s ease;
         }
 
         .sidebar.expanded {
@@ -300,18 +300,18 @@
         
         /* Mobile Responsive - 375px */
         @media (max-width: 375px) {
-            /* Sidebar off-canvas by default on very small screens */
+            /* Keep sidebar visible but slightly wider for touch targets */
             .sidebar {
-                width: 230px !important;
-                transform: translateX(-100%);
+                transform: none;
+                width: 80px !important;
             }
             
             .sidebar.mobile-active {
-                transform: translateX(0);
+                transform: none;
             }
             
             .main-content {
-                margin-left: 0 !important;
+                margin-left: 80px !important;
             }
             
             .content-body {
@@ -345,8 +345,7 @@
             
             /* Sidebar adjustments for 375px */
             .sidebar-item {
-                padding: 12px 15px !important;
-                justify-content: flex-start !important;
+                padding: 15px 0 !important;
             }
             
             .sidebar.expanded .sidebar-item {
@@ -373,18 +372,18 @@
         
         /* Mobile Responsive - General */
         @media (max-width: 768px) {
-            /* Sidebar off-canvas on mobile */
+            /* Sidebar stays visible on mobile, using collapsed width */
             .sidebar {
-                width: 260px !important;
-                transform: translateX(-100%);
+                transform: none;
+                width: 80px !important;
             }
             
             .sidebar.mobile-active {
-                transform: translateX(0);
+                transform: none;
             }
             
             .main-content {
-                margin-left: 0 !important;
+                margin-left: 80px !important;
             }
             
             .content-body {
