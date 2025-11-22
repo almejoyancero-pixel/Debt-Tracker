@@ -2218,14 +2218,40 @@ def admin_debts(request):
 
 @user_passes_test(is_superuser)
 def admin_debt_detail(request, debt_id):
-    """Admin view to see debt details."""
+    """Admin view to see debt details with full proof context."""
     from .models import Debt, Payment, AdminActivityLog
-    
+
     debt = get_object_or_404(Debt, id=debt_id)
-    # For admin view, only record payments that are completed or confirmed.
-    # Pending cash payments should not be treated as finalized payments yet.
-    payments = debt.payments.exclude(method='cash', status='pending_confirmation').order_by('-created_at')
-    
+
+    # Completed payments for this debt (same logic as debtor/creditor detail)
+    payments = Payment.objects.filter(debt=debt, status='completed').order_by('payment_date', 'created_at')
+
+    # All payments (including pending) for proof display
+    all_payments = Payment.objects.filter(debt=debt).order_by('-created_at')
+
+    # Determine primary payment method (most recent non-rejected payment)
+    primary_payment = all_payments.exclude(status='rejected').first()
+    primary_payment_method = primary_payment.method if primary_payment else None
+
+    # Most recent GCash payment (for receipt display)
+    latest_gcash_payment = all_payments.filter(method='gcash', status='completed').first()
+
+    # Most recent Cash payment (for proof display)
+    latest_cash_payment = all_payments.filter(method='cash').exclude(status='rejected').first()
+
+    # Calculate running balance per payment (for admin insight)
+    payments_with_balance = []
+    running_paid = 0
+    for payment in payments:
+        running_paid += float(payment.amount)
+        balance_after = float(debt.amount) - running_paid
+        payments_with_balance.append({
+            'payment': payment,
+            'running_paid': running_paid,
+            'balance_after': max(0, balance_after),
+            'is_full_payment': balance_after <= 0,
+        })
+
     # Log activity
     AdminActivityLog.objects.create(
         user=request.user,
@@ -2233,14 +2259,20 @@ def admin_debt_detail(request, debt_id):
         description=f'Admin {request.user.username} viewed details for debt #{debt.id}',
         related_id=debt.id,
         ip_address=request.META.get('REMOTE_ADDR'),
-        user_agent=request.META.get('HTTP_USER_AGENT')
+        user_agent=request.META.get('HTTP_USER_AGENT'),
     )
-    
+
     context = {
         'debt': debt,
         'payments': payments,
+        'payments_with_balance': payments_with_balance,
+        'primary_payment_method': primary_payment_method,
+        'latest_gcash_payment': latest_gcash_payment,
+        'latest_cash_payment': latest_cash_payment,
+        'total_paid': running_paid,
+        'remaining_balance': debt.balance,
     }
-    
+
     return render(request, 'admin/debt_detail.html', context)
 
 
