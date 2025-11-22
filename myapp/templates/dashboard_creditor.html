@@ -178,6 +178,164 @@
         background-color: #f8f9fa;
         font-weight: bold;
     }
+    /* Mobile Responsive Styles for 375px */
+    @media (max-width: 375px) {
+        /* Container padding */
+        .container-fluid {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+        
+        /* Summary cards - stack vertically */
+        .summary-card {
+            margin-bottom: 15px !important;
+            height: auto !important;
+            min-height: 120px !important;
+        }
+        
+        .summary-card .card-body {
+            padding: 12px !important;
+            min-height: 100px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .summary-card h2 {
+            font-size: 1.3rem !important;
+            margin-bottom: 5px !important;
+        }
+        
+        .summary-card h6 {
+            font-size: 0.75rem !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .summary-card .text-primary,
+        .summary-card .text-warning,
+        .summary-card .text-success,
+        .summary-card .text-danger {
+            font-size: 1.8rem !important;
+        }
+        
+        /* Search form */
+        .input-group {
+            flex-wrap: wrap !important;
+        }
+        
+        .input-group .form-control {
+            min-width: 200px !important;
+            margin-bottom: 10px !important;
+        }
+        
+        .input-group .btn {
+            width: 100% !important;
+            margin-top: 5px !important;
+        }
+        
+        /* Accordion items */
+        .accordion-item {
+            margin: 0 0 10px 0 !important;
+        }
+        
+        .accordion-button {
+            padding: 10px !important;
+            font-size: 0.9rem !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .accordion-button > div {
+            width: 100% !important;
+            margin-bottom: 5px !important;
+        }
+        
+        .accordion-button .badge {
+            font-size: 0.7rem !important;
+            padding: 0.25em 0.5em !important;
+            margin: 2px !important;
+        }
+        
+        /* Table responsive */
+        .table-responsive {
+            font-size: 0.8rem !important;
+        }
+        
+        .table th,
+        .table td {
+            padding: 8px 4px !important;
+            vertical-align: middle !important;
+        }
+        
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            display: none !important; /* Hide description column */
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.2rem 0.4rem !important;
+            font-size: 0.7rem !important;
+        }
+        
+        /* Modal adjustments */
+        .modal-dialog {
+            margin: 10px !important;
+            max-width: calc(100% - 20px) !important;
+        }
+        
+        .modal-body {
+            padding: 15px !important;
+        }
+        
+        .modal-body ul {
+            font-size: 0.9rem !important;
+        }
+        
+        /* Pending payments table */
+        .table-hover th,
+        .table-hover td {
+            font-size: 0.8rem !important;
+        }
+        
+        /* Back to top button */
+        .back-to-top {
+            bottom: 15px !important;
+            right: 15px !important;
+            padding: 8px 12px !important;
+        }
+        
+        /* Alert boxes */
+        .alert {
+            padding: 10px !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Progress bars */
+        .progress {
+            height: 15px !important;
+        }
+        
+        /* Badge adjustments */
+        .badge {
+            font-size: 0.7rem !important;
+        }
+        
+        /* Card headers */
+        .card-header h5 {
+            font-size: 1rem !important;
+        }
+        
+        /* Flex adjustments for debtor info */
+        .d-flex.justify-content-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .d-flex.align-items-center.flex-shrink-0 {
+            margin-top: 8px !important;
+            margin-left: 0 !important;
+        }
+    }
+    
     /* Search bar responsive styles */
     @media (max-width: 768px) {
         .d-flex.flex-wrap.gap-2 {

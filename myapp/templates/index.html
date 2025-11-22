@@ -172,12 +172,47 @@
             .hero-section {
                 padding-top: 80px;
             }
+
+            .hero-section .row {
+                text-align: center;
+            }
+
+            .hero-section .hero-subtitle {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-section .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-section .hero-card {
+                margin-top: 24px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            body {
+                background: linear-gradient(to bottom, #00357a 0%, #00357a 10%, #bfecac 10%, #bfecac 100%);
+            }
+
+            #about,
+            #features,
+            #contact {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            footer .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg bg-white sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
          <a class="navbar-brand" href="{% url 'myapp:creditor_dashboard' %}">
                         <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Logo" class="logo me-2">

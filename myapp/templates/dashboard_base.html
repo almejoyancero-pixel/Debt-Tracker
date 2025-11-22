@@ -186,9 +186,25 @@
             background: var(--primary-color);
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: space-between;
             padding: 0 30px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: rgba(255,255,255,0.1);
         }
         
         .main-header-title {
@@ -282,26 +298,120 @@
             color: var(--primary-color) !important;
         }
         
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
+        /* Mobile Responsive - 375px */
+        @media (max-width: 375px) {
             .sidebar {
                 transform: translateX(-100%);
+                width: 280px !important;
             }
             
-            .sidebar.active {
+            .sidebar.mobile-active {
                 transform: translateX(0);
             }
             
             .main-content {
-                margin-left: 0;
+                margin-left: 0 !important;
             }
             
-            .sidebar.expanded ~ .main-content {
-                margin-left: 0;
+            .content-body {
+                padding: 10px !important;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                font-size: 1.3rem;
+                padding: 6px;
+            }
+            
+            .main-header {
+                padding: 0 10px !important;
+                height: 56px !important;
+            }
+            
+            .main-header-title {
+                font-size: 1.2rem !important;
+                letter-spacing: 0.5px !important;
+            }
+            
+            .main-header-logo {
+                width: 36px !important;
+                height: 36px !important;
+            }
+            
+            .main-header-brand {
+                gap: 8px !important;
+            }
+            
+            /* Sidebar adjustments for 375px */
+            .sidebar-item {
+                padding: 15px 0 !important;
+            }
+            
+            .sidebar.expanded .sidebar-item {
+                padding: 10px 15px !important;
+            }
+            
+            .sidebar-item i {
+                font-size: 1.1rem !important;
+            }
+            
+            .sidebar-item-text {
+                font-size: 0.9rem !important;
+            }
+            
+            .sidebar-profile {
+                padding: 10px 15px !important;
+            }
+            
+            .sidebar-toggle {
+                padding: 12px 0 !important;
+                font-size: 1.2rem !important;
+            }
+        }
+        
+        /* Mobile Responsive - General */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px !important;
+            }
+            
+            .sidebar.mobile-active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
             }
             
             .content-body {
                 padding: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .main-header {
+                padding: 0 15px;
+            }
+        }
+        
+        /* Mobile overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-overlay.active {
+                display: block;
             }
         }
     </style>
@@ -396,9 +506,15 @@
         </nav>
     </aside>
     
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+    
     <!-- Main Content -->
     <main class="main-content">
         <header class="main-header">
+            <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
             <div class="main-header-brand">
                 <div class="main-header-title">DEBT TRACKER</div>
                 <img src="{% static 'image/Debt Tracker Logo.png' %}" alt="Debt Tracker Logo" class="main-header-logo">
@@ -434,17 +550,39 @@
             }
         }
         
-        // Mobile Responsive
-        if (window.innerWidth <= 768) {
-            document.addEventListener('click', function(event) {
-                const sidebar = document.getElementById('sidebar');
-                const isClickInside = sidebar.contains(event.target);
-                
-                if (!isClickInside && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                }
-            });
+        // Mobile Sidebar Functions
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('mobile-active');
+            overlay.classList.toggle('active');
         }
+        
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.remove('mobile-active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close sidebar when clicking on sidebar links (mobile)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth <= 768) {
+                const sidebarLinks = document.querySelectorAll('.sidebar-item');
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', closeMobileSidebar);
+                });
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileSidebar();
+            }
+        });
     </script>
     
     {% block extra_js %}{% endblock %}
