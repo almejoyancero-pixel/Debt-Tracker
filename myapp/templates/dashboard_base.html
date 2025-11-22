@@ -300,17 +300,18 @@
         
         /* Mobile Responsive - 375px */
         @media (max-width: 375px) {
+            /* Keep sidebar visible but slightly wider for touch targets */
             .sidebar {
-                transform: translateX(-100%);
-                width: 280px !important;
+                transform: none;
+                width: 80px !important;
             }
             
             .sidebar.mobile-active {
-                transform: translateX(0);
+                transform: none;
             }
             
             .main-content {
-                margin-left: 0 !important;
+                margin-left: 80px !important;
             }
             
             .content-body {
@@ -371,17 +372,18 @@
         
         /* Mobile Responsive - General */
         @media (max-width: 768px) {
+            /* Sidebar stays visible on mobile, using collapsed width */
             .sidebar {
-                transform: translateX(-100%);
-                width: 260px !important;
+                transform: none;
+                width: 80px !important;
             }
             
             .sidebar.mobile-active {
-                transform: translateX(0);
+                transform: none;
             }
             
             .main-content {
-                margin-left: 0 !important;
+                margin-left: 80px !important;
             }
             
             .content-body {
