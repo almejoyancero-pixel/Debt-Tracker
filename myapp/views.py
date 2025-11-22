@@ -1479,7 +1479,7 @@ def debt_detail(request, id):
         messages.error(request, "Access denied.")
         return redirect('myapp:home')
     
-    # Get all payments for this debt
+    # Get all completed payments for this debt (pending cash payments are NOT counted yet)
     payments = Payment.objects.filter(debt=debt, status='completed').order_by('payment_date', 'created_at')
     
     # Get all payments (including pending) for proof display
@@ -1510,6 +1510,9 @@ def debt_detail(request, id):
             'is_full_payment': balance_after <= 0
         })
     
+    # Determine where the user came from (dashboard vs notifications) for back button text
+    from_page = request.GET.get('from', None)
+
     context = {
         'debt': debt,
         'payments': payments,
@@ -1521,6 +1524,7 @@ def debt_detail(request, id):
         'remaining_balance': debt.balance,
         'last_payment': payments.first() if payments.exists() else None,
         'last_payment_date': payments.first().payment_date if payments.exists() else None,
+        'from_page': from_page,
     }
     
     return render(request, 'debt_detail.html', context)
@@ -2218,7 +2222,9 @@ def admin_debt_detail(request, debt_id):
     from .models import Debt, Payment, AdminActivityLog
     
     debt = get_object_or_404(Debt, id=debt_id)
-    payments = debt.payments.all().order_by('-created_at')
+    # For admin view, only record payments that are completed or confirmed.
+    # Pending cash payments should not be treated as finalized payments yet.
+    payments = debt.payments.exclude(method='cash', status='pending_confirmation').order_by('-created_at')
     
     # Log activity
     AdminActivityLog.objects.create(
