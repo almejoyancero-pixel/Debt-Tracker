@@ -4,119 +4,236 @@
 
 {% block content %}
 <style>
-    .card {
-        animation: fadeIn 0.5s ease-out;
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
     
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 900px;
+        width: 100%;
+        display: flex;
+        min-height: 500px;
     }
     
-    .login-icon {
-        animation: bounceIn 1s ease-out, pulse 2s ease-in-out 1s infinite;
-        display: inline-block;
+    .auth-left {
+        background: linear-gradient(135deg, #00357a 0%, #004E89 100%);
+        color: white;
+        padding: 40px 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
     }
     
-    @keyframes bounceIn {
-        0% {
-            opacity: 0;
-            transform: scale(0.3) translateY(-50px);
-        }
-        50% {
-            opacity: 1;
-            transform: scale(1.05);
-        }
-        70% {
-            transform: scale(0.9);
-        }
-        100% {
-            transform: scale(1);
-        }
+    .auth-right {
+        padding: 40px 30px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     
-    @keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
+    .auth-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+    
+    .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .auth-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #00357a;
+        box-shadow: 0 0 0 0.2rem rgba(0, 53, 122, 0.25);
+    }
+    
+    .btn-auth {
+        background: linear-gradient(135deg, #00357a 0%, #004E89 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 53, 122, 0.3);
+    }
+    
+    .btn-outline-auth {
+        border: 2px solid #00357a;
+        color: #00357a;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-auth:hover {
+        background: #00357a;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .role-selector {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .role-option {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .role-option:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .role-option.active {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .role-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #667eea;
+    }
+    
+    @media (max-width: 768px) {
+        .auth-card {
+            flex-direction: column;
+            max-width: 400px;
         }
-        50% {
-            transform: scale(1.05);
+        
+        .auth-left {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .auth-right {
+            padding: 40px 30px;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+        }
+        
+        .auth-icon {
+            font-size: 60px;
         }
     }
 </style>
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-lg">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <i class="bi bi-person-circle login-icon" style="font-size: 4rem; color: var(--primary-color);"></i>
-                    <h2 class="mt-3">Welcome Back</h2>
-                    <p class="text-muted">Login to your account</p>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-left">
+            <div class="text-center">
+                
+                <h1 class="auth-title">Debt Tracker</h1>
+                <p class="auth-subtitle">Manage your debts efficiently and securely</p>
+                <div class="mt-4">
+                    <i class="bi bi-shield-check" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p style="font-size: 0.9rem; opacity: 0.8;">Secure & Reliable</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="auth-right">
+            <div class="text-center mb-4">
+                <h2 class="mb-3" style="color: #333; font-weight: 700;">Welcome Back!</h2>
+                <p style="color: #666;">Login to access your account</p>
+            </div>
+
+            <!-- Error Messages Only -->
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags != 'success' and message.tags != 'info' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'myapp:login' %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-person"></i> Username
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="username" 
+                           name="username" 
+                           placeholder="Enter your username" 
+                           value="{{ username|default:'' }}"
+                           required
+                           autofocus>
                 </div>
 
-                <!-- Error Messages Only (exclude success and info) -->
-                {% if messages %}
-                    {% for message in messages %}
-                        {% if message.tags != 'success' and message.tags != 'info' %}
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-
-                <form method="post" action="{% url 'myapp:login' %}">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person"></i> Username
-                        </label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="username" 
-                               name="username" 
-                               placeholder="Enter your username" 
-                               value="{{ username|default:'' }}"
-                               required
-                               autofocus>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="bi bi-lock"></i> Password
-                        </label>
-                        <input type="password" 
-                               class="form-control" 
-                               id="password" 
-                               name="password" 
-                               placeholder="Enter your password" 
-                               required>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Login
-                        </button>
-                    </div>
-                </form>
-
-                <hr class="my-4">
-
-                <div class="text-center">
-                    <p class="mb-0">Don't have an account?</p>
-                    <a href="{% url 'myapp:register' %}" class="btn btn-outline-primary mt-2">
-                        <i class="bi bi-person-plus"></i> Register Here
-                    </a>
+                <div class="mb-4">
+                    <label for="password" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-lock"></i> Password
+                    </label>
+                    <input type="password" 
+                           class="form-control" 
+                           id="password" 
+                           name="password" 
+                           placeholder="Enter your password" 
+                           required>
                 </div>
+
+                <div class="d-grid mb-4">
+                    <button type="submit" class="btn btn-auth">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center">
+                <p style="color: #666; margin-bottom: 15px;">Don't have an account?</p>
+                <a href="{% url 'myapp:register' %}" class="btn btn-outline-auth w-100">
+                    <i class="bi bi-person-plus"></i> Register
+                </a>
             </div>
         </div>
     </div>

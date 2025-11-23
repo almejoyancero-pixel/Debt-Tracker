@@ -3,146 +3,328 @@
 {% block title %}Register - Debt Tracker{% endblock %}
 
 {% block content %}
-<!-- SweetAlert2 CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow-lg">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <i class="bi bi-person-plus-fill" style="font-size: 4rem; color: var(--primary-color);"></i>
-                    <h2 class="mt-3">Create Account</h2>
-                    <p class="text-muted">Join the Debt Tracker System</p>
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 900px;
+        width: 100%;
+        display: flex;
+        min-height: 500px;
+    }
+    
+    .auth-left {
+        background: linear-gradient(135deg, #00357a 0%, #004E89 100%);
+        color: white;
+        padding: 40px 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+    }
+    
+    .auth-right {
+        padding: 40px 30px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .auth-icon {
+        font-size: 60px;
+        margin-bottom: 15px;
+    }
+    
+    .auth-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .auth-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #00357a;
+        box-shadow: 0 0 0 0.2rem rgba(0, 53, 122, 0.25);
+    }
+    
+    .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    .form-select:focus {
+        border-color: #00357a;
+        box-shadow: 0 0 0 0.2rem rgba(0, 53, 122, 0.25);
+    }
+    
+    .btn-auth {
+        background: linear-gradient(135deg, #00357a 0%, #004E89 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 53, 122, 0.3);
+    }
+    
+    .btn-outline-auth {
+        border: 2px solid #00357a;
+        color: #00357a;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-auth:hover {
+        background: #00357a;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .role-selector {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .role-option {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .role-option:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+    
+    .role-option.active {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .role-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #667eea;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+    
+    @media (max-width: 768px) {
+        .auth-card {
+            flex-direction: column;
+            max-width: 400px;
+        }
+        
+        .auth-left {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .auth-right {
+            padding: 40px 30px;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+        }
+        
+        .auth-icon {
+            font-size: 60px;
+        }
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-left">
+            <div class="text-center">
+                
+                <h1 class="auth-title">Join Us</h1>
+                <p class="auth-subtitle">Create your account and start managing your debts</p>
+                <div class="mt-4">
+                    <i class="bi bi-graph-up" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                    <p style="font-size: 0.9rem; opacity: 0.8;">Track & Monitor</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="auth-right">
+            <div class="text-center mb-4">
+                <h2 class="mb-3" style="color: #333; font-weight: 700;">Create Account</h2>
+                <p style="color: #666;">Join the Debt Tracker community</p>
+            </div>
+
+            <!-- General Error Alert -->
+            {% if general_error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Error:</strong> {{ general_error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'myapp:register' %}">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="full_name" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-person-badge"></i> Full Name
+                    </label>
+                    <input type="text"
+                           class="form-control {% if errors.full_name %}is-invalid{% endif %}"
+                           id="full_name"
+                           name="full_name"
+                           placeholder="Enter your full name"
+                           value="{{ full_name|default:'' }}"
+                           required
+                           autofocus>
+                    {% if errors.full_name %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i> {{ errors.full_name }}
+                    </div>
+                    {% endif %}
                 </div>
 
-                <!-- General Error Alert -->
-                {% if general_error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Error:</strong> {{ general_error }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="mb-3">
+                    <label for="username" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-person"></i> Username
+                    </label>
+                    <input type="text"
+                           class="form-control {% if errors.username %}is-invalid{% endif %}"
+                           id="username"
+                           name="username"
+                           placeholder="Choose a unique username"
+                           value="{{ username|default:'' }}"
+                           required>
+                    {% if errors.username %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i> {{ errors.username }}
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
-                <form method="post" action="{% url 'myapp:register' %}">
-                    {% csrf_token %}
-
-                    <div class="mb-3">
-                        <label for="full_name" class="form-label">
-                            <i class="bi bi-person-badge"></i> Full Name
-                        </label>
-                        <input type="text"
-                               class="form-control {% if errors.full_name %}is-invalid{% endif %}"
-                               id="full_name"
-                               name="full_name"
-                               placeholder="Enter your full name"
-                               value="{{ full_name|default:'' }}"
-                               required
-                               autofocus>
-                        {% if errors.full_name %}
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-circle"></i> {{ errors.full_name }}
-                        </div>
-                        {% endif %}
+                <div class="mb-3">
+                    <label for="email" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-envelope"></i> Email Address
+                    </label>
+                    <input type="email"
+                           class="form-control {% if errors.email %}is-invalid{% endif %}"
+                           id="email"
+                           name="email"
+                           placeholder="Enter your email address"
+                           value="{{ email|default:'' }}"
+                           required>
+                    {% if errors.email %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i> {{ errors.email }}
                     </div>
-
-                    <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="bi bi-person"></i> Username
-                        </label>
-                        <input type="text"
-                               class="form-control {% if errors.username %}is-invalid{% endif %}"
-                               id="username"
-                               name="username"
-                               placeholder="Choose a unique username"
-                               value="{{ username|default:'' }}"
-                               required>
-                        {% if errors.username %}
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-circle"></i> {{ errors.username }}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">
-                            <i class="bi bi-envelope"></i> Email Address
-                        </label>
-                        <input type="email"
-                               class="form-control {% if errors.email %}is-invalid{% endif %}"
-                               id="email"
-                               name="email"
-                               placeholder="Enter your email address"
-                               value="{{ email|default:'' }}"
-                               required>
-                        {% if errors.email %}
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-circle"></i> {{ errors.email }}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="account_type" class="form-label">
-                            <i class="bi bi-briefcase"></i> Account Type (Role)
-                        </label>
-                        <select class="form-select {% if errors.account_type %}is-invalid{% endif %}"
-                                id="account_type"
-                                name="account_type"
-                                required>
-                            <option value="">Select your role</option>
-                            <option value="creditor" {% if account_type == 'creditor' %}selected{% endif %}>Creditor (Lender)</option>
-                            <option value="debtor" {% if account_type == 'debtor' %}selected{% endif %}>Debtor (Borrower)</option>
-                        </select>
-                        {% if errors.account_type %}
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-circle"></i> {{ errors.account_type }}
-                        </div>
-                        {% else %}
-                        <div class="form-text">
-                            <small>
-                                <strong>Creditor:</strong> You lend money/items to others<br>
-                                <strong>Debtor:</strong> You borrow money/items from others
-                            </small>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="bi bi-lock"></i> Password
-                        </label>
-                        <input type="password"
-                               class="form-control {% if errors.password %}is-invalid{% endif %}"
-                               id="password"
-                               name="password"
-                               placeholder="Create a strong password"
-                               required>
-                        {% if errors.password %}
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-circle"></i> {{ errors.password }}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-check-circle"></i> Create Account
-                        </button>
-                    </div>
-                </form>
-
-                <hr class="my-4">
-
-                <div class="text-center">
-                    <p class="mb-0">Already have an account?</p>
-                    <a href="{% url 'myapp:login' %}" class="btn btn-outline-primary mt-2">
-                        <i class="bi bi-box-arrow-in-right"></i> Login Here
-                    </a>
+                    {% endif %}
                 </div>
+
+                <div class="mb-3">
+                    <label for="account_type" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-briefcase"></i> Account Type (Role)
+                    </label>
+                    <select class="form-select {% if errors.account_type %}is-invalid{% endif %}"
+                            id="account_type"
+                            name="account_type"
+                            required>
+                        <option value="">Select your role</option>
+                        <option value="creditor" {% if account_type == 'creditor' %}selected{% endif %}>Creditor (Lender)</option>
+                        <option value="debtor" {% if account_type == 'debtor' %}selected{% endif %}>Debtor (Borrower)</option>
+                    </select>
+                    {% if errors.account_type %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i> {{ errors.account_type }}
+                    </div>
+                    {% else %}
+                    <div class="form-text" style="color: #666; font-size: 0.875rem;">
+                        <small>
+                            <strong>Creditor:</strong> You lend money/items to others<br>
+                            <strong>Debtor:</strong> You borrow money/items from others
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label" style="font-weight: 600; color: #333;">
+                        <i class="bi bi-lock"></i> Password
+                    </label>
+                    <input type="password"
+                           class="form-control {% if errors.password %}is-invalid{% endif %}"
+                           id="password"
+                           name="password"
+                           placeholder="Create a strong password"
+                           required>
+                    {% if errors.password %}
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle"></i> {{ errors.password }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid mb-4">
+                    <button type="submit" class="btn btn-auth">
+                        <i class="bi bi-check-circle"></i> Register
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center">
+                <p style="color: #666; margin-bottom: 15px;">Already have an account?</p>
+                <a href="{% url 'myapp:login' %}" class="btn btn-outline-auth w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> Login Here
+                </a>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}
