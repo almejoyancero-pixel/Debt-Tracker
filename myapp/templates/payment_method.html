@@ -98,6 +98,22 @@
                         <strong>GCash Payment:</strong> You will be redirected to the payment gateway. A receipt will be generated automatically upon successful payment.
                     </div>
 
+                    <!-- Reference Number Field (shown only for GCash) -->
+                    <div id="reference-number-field" style="display: none;" class="mb-4">
+                        <label for="reference_number" class="form-label fw-bold">
+                            <i class="bi bi-hash"></i> GCash Reference Number
+                        </label>
+                        <input type="text" 
+                               class="form-control form-control-lg" 
+                               id="reference_number" 
+                               name="reference_number" 
+                               placeholder="e.g., GC123456789">
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> 
+                            Enter the GCash reference number from your transaction receipt
+                        </div>
+                    </div>
+
                     <hr class="my-4">
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-between">
@@ -145,14 +161,21 @@
         const gcashRadio = document.getElementById('gcash');
         const cashNote = document.getElementById('cash-note');
         const gcashNote = document.getElementById('gcash-note');
+        const referenceNumberField = document.getElementById('reference-number-field');
         
         function updateNotes() {
             if (cashRadio.checked) {
                 cashNote.style.display = 'block';
                 gcashNote.style.display = 'none';
+                referenceNumberField.style.display = 'none';
             } else if (gcashRadio.checked) {
                 cashNote.style.display = 'none';
                 gcashNote.style.display = 'block';
+                referenceNumberField.style.display = 'block';
+            } else {
+                cashNote.style.display = 'none';
+                gcashNote.style.display = 'none';
+                referenceNumberField.style.display = 'none';
             }
         }
         
