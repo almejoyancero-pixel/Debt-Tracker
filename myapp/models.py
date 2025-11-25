@@ -368,11 +368,11 @@ class Payment(models.Model):
         null=True,
         help_text="Transaction/Reference number (optional)"
     )
-    # description = models.TextField(
-    #     blank=True,
-    #     null=True,
-    #     help_text="Description of the payment (auto-filled when debt is deleted)"
-    # )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Description of the payment (auto-filled when debt is deleted)"
+    )
     debtor_proof = models.FileField(
         upload_to='payment_proofs/debtor/%Y/%m/%d/',
         blank=True,

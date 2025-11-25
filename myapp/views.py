@@ -620,7 +620,8 @@ def creditor_delete_debt(request, id):
         
         # Preserve payment records by setting debt reference to None before deletion
         payments = Payment.objects.filter(debt=debt)
-        payments.update(debt=None)
+        payments.update(debt=None, 
+                       description=f"Payment for deleted debt: {debtor.full_name} - ₱{debt_amount}")
         
         # Delete the debt permanently
         debt.delete()
