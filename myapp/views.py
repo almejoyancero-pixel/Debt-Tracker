@@ -616,11 +616,17 @@ def creditor_delete_debt(request, id):
     
     if request.method == 'POST':
         debt_amount = debt.amount
+        debtor = debt.debtor
+        
+        # Preserve payment records by setting debt reference to None before deletion
+        payments = Payment.objects.filter(debt=debt)
+        payments.update(debt=None, 
+                       description=f"Payment for deleted debt: {debtor.full_name} - ₱{debt_amount}")
         
         # Delete the debt permanently
         debt.delete()
         
-        messages.success(request, 'Paid debt deleted successfully.')
+        messages.success(request, 'Paid debt deleted successfully. Payment records have been preserved.')
         return redirect('myapp:creditor_dashboard')
     
     return redirect('myapp:creditor_dashboard')
