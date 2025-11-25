@@ -617,7 +617,7 @@ def creditor_delete_debt(request, id):
     if request.method == 'POST':
         debt_amount = debt.amount
         
-        # Temporary fix: actually delete the debt instead of soft delete
+        # Delete the debt permanently
         debt.delete()
         
         messages.success(request, 'Paid debt deleted successfully.')
