@@ -256,8 +256,8 @@ def creditor_dashboard(request):
     
     search_query = request.GET.get('q', '').strip()
     
-    # Get all debts for this creditor (temporary fix - remove hidden_from_creditor filter)
-    debts = Debt.objects.filter(creditor=request.user).select_related('debtor')
+    # Get all debts for this creditor (excluding hidden ones)
+    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor')
     
     if search_query:
         debts = debts.filter(
@@ -522,8 +522,8 @@ def debtor_list(request):
         messages.error(request, "Only creditors can view debtors.")
         return redirect('myapp:home')
     
-    # Get all unique debtors who have debts with this creditor (temporary fix)
-    debts = Debt.objects.filter(creditor=request.user)
+    # Get all unique debtors who have debts with this creditor (excluding hidden)
+    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False)
     debtors = CustomUser.objects.filter(
         id__in=debts.values_list('debtor_id', flat=True).distinct(),
         account_type='debtor'
@@ -616,17 +616,12 @@ def creditor_delete_debt(request, id):
     
     if request.method == 'POST':
         debt_amount = debt.amount
-        debtor = debt.debtor
         
-        # Preserve payment records by setting debt reference to None before deletion
-        payments = Payment.objects.filter(debt=debt)
-        payments.update(debt=None, 
-                       description=f"Payment for deleted debt: {debtor.full_name} - ₱{debt_amount}")
+        # Soft delete: hide from creditor dashboard but keep records
+        debt.hidden_from_creditor = True
+        debt.save()
         
-        # Delete the debt permanently
-        debt.delete()
-        
-        messages.success(request, 'Paid debt deleted successfully. Payment records have been preserved.')
+        messages.success(request, 'Paid debt removed from dashboard. All payment and transaction records are preserved.')
         return redirect('myapp:creditor_dashboard')
     
     return redirect('myapp:creditor_dashboard')
@@ -765,7 +760,7 @@ def all_debts_view(request):
         messages.error(request, "Only creditors can view all debts.")
         return redirect('myapp:home')
     
-    debts = Debt.objects.filter(creditor=request.user).select_related('debtor').order_by('debtor__full_name', '-date_created')
+    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor').order_by('debtor__full_name', '-date_created')
     
     # Group by debtor
     debtors_dict = {}

@@ -99,16 +99,17 @@
                     </div>
 
                     <!-- Reference Number Field (shown only for GCash) -->
-                    <div id="reference-number-field" style="display: none;" class="mb-4">
-                        <label for="reference_number" class="form-label fw-bold">
-                            <i class="bi bi-hash"></i> GCash Reference Number
+                    <div id="reference-number-field" style="display: none;" class="mb-4 border border-primary rounded p-3 bg-light">
+                        <label for="reference_number" class="form-label fw-bold text-primary">
+                            <i class="bi bi-hash"></i> GCash Reference Number <span class="text-danger">*</span>
                         </label>
                         <input type="text" 
-                               class="form-control form-control-lg" 
+                               class="form-control form-control-lg border-primary" 
                                id="reference_number" 
                                name="reference_number" 
-                               placeholder="e.g., GC123456789">
-                        <div class="form-text">
+                               placeholder="e.g., GC123456789"
+                               required>
+                        <div class="form-text text-primary">
                             <i class="bi bi-info-circle"></i> 
                             Enter the GCash reference number from your transaction receipt
                         </div>
@@ -164,23 +165,43 @@
         const referenceNumberField = document.getElementById('reference-number-field');
         
         function updateNotes() {
-            if (cashRadio.checked) {
-                cashNote.style.display = 'block';
-                gcashNote.style.display = 'none';
-                referenceNumberField.style.display = 'none';
-            } else if (gcashRadio.checked) {
-                cashNote.style.display = 'none';
-                gcashNote.style.display = 'block';
-                referenceNumberField.style.display = 'block';
+            console.log('Updating payment method UI...');
+            
+            if (cashRadio && cashRadio.checked) {
+                console.log('Cash selected');
+                if (cashNote) cashNote.style.display = 'block';
+                if (gcashNote) gcashNote.style.display = 'none';
+                if (referenceNumberField) referenceNumberField.style.display = 'none';
+            } else if (gcashRadio && gcashRadio.checked) {
+                console.log('GCash selected - showing reference field');
+                if (cashNote) cashNote.style.display = 'none';
+                if (gcashNote) gcashNote.style.display = 'block';
+                if (referenceNumberField) {
+                    referenceNumberField.style.display = 'block';
+                    // Focus on the reference number field
+                    setTimeout(() => {
+                        const refInput = document.getElementById('reference_number');
+                        if (refInput) refInput.focus();
+                    }, 100);
+                }
             } else {
-                cashNote.style.display = 'none';
-                gcashNote.style.display = 'none';
-                referenceNumberField.style.display = 'none';
+                console.log('No payment method selected');
+                if (cashNote) cashNote.style.display = 'none';
+                if (gcashNote) gcashNote.style.display = 'none';
+                if (referenceNumberField) referenceNumberField.style.display = 'none';
             }
         }
         
-        cashRadio.addEventListener('change', updateNotes);
-        gcashRadio.addEventListener('change', updateNotes);
+        // Add event listeners
+        if (cashRadio) cashRadio.addEventListener('change', updateNotes);
+        if (gcashRadio) gcashRadio.addEventListener('change', updateNotes);
+        
+        // Also add click events for better responsiveness
+        if (cashRadio) cashRadio.addEventListener('click', updateNotes);
+        if (gcashRadio) gcashRadio.addEventListener('click', updateNotes);
+        
+        // Initial check
+        updateNotes();
     });
 </script>
 {% endblock %}

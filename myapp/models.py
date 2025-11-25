@@ -236,6 +236,10 @@ class Debt(models.Model):
         default=False,
         help_text="If True, debt is hidden from debtor's view (soft delete)"
     )
+    hidden_from_creditor = models.BooleanField(
+        default=False,
+        help_text="If True, debt is hidden from creditor's view (soft delete)"
+    )
     
     # Timestamps
     date_created = models.DateTimeField(
@@ -337,9 +341,7 @@ class Payment(models.Model):
     # Relationships
     debt = models.ForeignKey(
         Debt,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.CASCADE,
         related_name='payments',
         help_text="Associated debt for this payment"
     )
@@ -367,11 +369,6 @@ class Payment(models.Model):
         blank=True,
         null=True,
         help_text="Transaction/Reference number (optional)"
-    )
-    description = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Description of the payment (auto-filled when debt is deleted)"
     )
     debtor_proof = models.FileField(
         upload_to='payment_proofs/debtor/%Y/%m/%d/',
