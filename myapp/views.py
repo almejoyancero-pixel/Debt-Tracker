@@ -256,8 +256,8 @@ def creditor_dashboard(request):
     
     search_query = request.GET.get('q', '').strip()
     
-    # Get all debts for this creditor
-    debts = Debt.objects.filter(creditor=request.user).select_related('debtor')
+    # Get all debts for this creditor, excluding those the creditor chose to hide
+    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor')
     
     if search_query:
         debts = debts.filter(
@@ -609,8 +609,16 @@ def creditor_delete_debt(request, id):
         messages.error(request, "You can only delete debts where you are the creditor.")
         return redirect('myapp:creditor_dashboard')
     
-    # Deletion of paid debts has been disabled by design
-    messages.info(request, "Deleting paid debts has been disabled. Records are kept for tracking.")
+    # Only allow hiding of fully paid debts
+    if debt.status != 'paid':
+        messages.error(request, "You can only remove debts that are fully paid from your dashboard.")
+        return redirect('myapp:creditor_dashboard')
+
+    # Soft-delete for creditor: hide from creditor views but keep all records
+    debt.hidden_from_creditor = True
+    debt.save(update_fields=['hidden_from_creditor'])
+
+    messages.success(request, 'This paid debt has been removed from your dashboard. Payment and transaction records are preserved.')
     return redirect('myapp:creditor_dashboard')
 
 
@@ -747,7 +755,7 @@ def all_debts_view(request):
         messages.error(request, "Only creditors can view all debts.")
         return redirect('myapp:home')
     
-    debts = Debt.objects.filter(creditor=request.user).select_related('debtor').order_by('debtor__full_name', '-date_created')
+    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor').order_by('debtor__full_name', '-date_created')
     
     # Group by debtor
     debtors_dict = {}
