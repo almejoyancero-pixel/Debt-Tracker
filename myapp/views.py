@@ -522,8 +522,8 @@ def debtor_list(request):
         messages.error(request, "Only creditors can view debtors.")
         return redirect('myapp:home')
     
-    # Get all unique debtors who have debts with this creditor (excluding hidden)
-    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False)
+    # Get all unique debtors who have debts with this creditor
+    debts = Debt.objects.filter(creditor=request.user)
     debtors = CustomUser.objects.filter(
         id__in=debts.values_list('debtor_id', flat=True).distinct(),
         account_type='debtor'
@@ -615,13 +615,11 @@ def creditor_delete_debt(request, id):
         return redirect('myapp:creditor_dashboard')
     
     if request.method == 'POST':
-        debt_amount = debt.amount
-        
-        # Soft delete: hide from creditor dashboard but keep records
+        # Soft delete - hide from creditor dashboard but keep records
         debt.hidden_from_creditor = True
         debt.save()
         
-        messages.success(request, 'Paid debt removed from dashboard. All payment and transaction records are preserved.')
+        messages.success(request, 'Paid debt removed from your dashboard. Records remain in payment history.')
         return redirect('myapp:creditor_dashboard')
     
     return redirect('myapp:creditor_dashboard')

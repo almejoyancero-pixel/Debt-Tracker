@@ -673,7 +673,7 @@
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#deleteModal{{ debt.id }}"
                                                         data-bs-tooltip="tooltip"
-                                                        title="Hide Paid Debt">
+                                                        title="Remove Paid Debt from Dashboard">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                                 {% endif %}
@@ -725,14 +725,14 @@
                                                                 {% else %}
                                                                     {% widthratio debt.paid_amount|default:0 debt.amount 100 as payment_percentage_fixed %}
                                                                 {% endif %}
-                                                                {% with width_percent=payment_percentage_fixed|default:0 %}
+                                                                {% with width_percent=payment_percentage_fixed|default:0|default:0 %}
                                                                 <div class="progress-bar {% if debt.balance <= 0 %}bg-success{% else %}bg-warning{% endif %}" 
                                                                      role="progressbar" 
                                                                      style="width: {{ width_percent|default:0 }}%;" 
-                                                                     aria-valuenow="{{ width_percent }}" 
+                                                                     aria-valuenow="{{ width_percent|default:0 }}" 
                                                                      aria-valuemin="0" 
                                                                      aria-valuemax="100">
-                                                                    {{ width_percent }}%
+                                                                    {{ width_percent|default:0 }}%
                                                                 </div>
                                                                 {% endwith %}
                                                             </div>
@@ -885,17 +885,18 @@
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header bg-danger text-white">
-                                                            <h5 class="modal-title"><i class="bi bi-eye-slash"></i> Hide Paid Debt</h5>
+                                                            <h5 class="modal-title"><i class="bi bi-eye-slash"></i> Remove Paid Debt</h5>
                                                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <form method="post" action="{% url 'myapp:creditor_delete_debt' debt.id %}">
                                                             {% csrf_token %}
                                                             <div class="modal-body">
-                                                                <div class="alert alert-info">
-                                                                    <i class="bi bi-info-circle"></i> 
-                                                                    <strong>Information:</strong> This action will remove this paid debt from your dashboard but preserve all payment and transaction records.
+                                                                <div class="alert alert-warning">
+                                                                    <i class="bi bi-exclamation-triangle"></i> 
+                                                                    <strong>Info:</strong> This action will remove this paid debt from your dashboard only.
                                                                 </div>
-                                                                <p><strong>Are you sure you want to hide this paid debt from your dashboard?</strong></p>
+                                                                <p><strong>Are you sure you want to remove this paid debt from your dashboard?</strong></p>
+                                                                <p class="text-muted small">The debt record will remain in payment history for audit purposes.</p>
                                                                 <p><strong>Debt Details:</strong></p>
                                                                 <ul>
                                                                     <li>Debtor: <strong>{{ debt.debtor.full_name }}</strong></li>
@@ -907,13 +908,13 @@
                                                                 </ul>
                                                                 <p class="text-muted small">
                                                                     <i class="bi bi-info-circle"></i> 
-                                                                    The debtor will not be notified about this action.
+                                                                    This action is private and will not be notified to the debtor.
                                                                 </p>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                                 <button type="submit" class="btn btn-danger">
-                                                                    <i class="bi bi-eye-slash"></i> Hide Debt
+                                                                    <i class="bi bi-eye-slash"></i> Remove Debt
                                                                 </button>
                                                             </div>
                                                         </form>
