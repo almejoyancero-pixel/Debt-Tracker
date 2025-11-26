@@ -256,7 +256,7 @@ def creditor_dashboard(request):
     
     search_query = request.GET.get('q', '').strip()
     
-    # Get all debts for this creditor (temporarily excluding hidden filter until migration applied to production)
+    # Get all debts for this creditor
     debts = Debt.objects.filter(creditor=request.user).select_related('debtor')
     
     if search_query:
@@ -615,11 +615,16 @@ def creditor_delete_debt(request, id):
         return redirect('myapp:creditor_dashboard')
     
     if request.method == 'POST':
-        # For now, use hard delete since hidden_from_creditor field is commented out for production
-        # After migration is applied, this will be changed to soft delete
         debtor = debt.debtor
         debt_amount = debt.amount
         debt.delete()
+        
+        Notification.objects.create(
+            user=debtor,
+            notification_type='debt_deleted',
+            message=f'Creditor {request.user.full_name} has deleted a paid debt of ₱{debt_amount:.2f} from your records.'
+        )
+        
         messages.success(request, 'Paid debt deleted successfully.')
         return redirect('myapp:creditor_dashboard')
     

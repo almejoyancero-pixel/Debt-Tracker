@@ -236,10 +236,6 @@ class Debt(models.Model):
         default=False,
         help_text="If True, debt is hidden from debtor's view (soft delete)"
     )
-    hidden_from_creditor = models.BooleanField(
-        default=False,
-        help_text="If True, debt is hidden from creditor's dashboard (soft delete)"
-    )
     
     # Timestamps
     date_created = models.DateTimeField(
