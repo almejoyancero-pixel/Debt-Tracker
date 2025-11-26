@@ -665,18 +665,6 @@
                                                     <i class="bi bi-bell"></i>
                                                 </button>
                                                 {% endif %}
-                                                
-                                                <!-- Delete Button (Only for paid debts) -->
-                                                {% if debt.status == 'paid' %}
-                                                <button type="button" 
-                                                        class="btn btn-outline-danger" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteModal{{ debt.id }}"
-                                                        data-bs-tooltip="tooltip"
-                                                        title="Delete Paid Debt">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                {% endif %}
                                             </div>
                                             
                                             <!-- Payment Summary Modal -->

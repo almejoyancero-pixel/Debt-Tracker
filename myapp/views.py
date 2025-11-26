@@ -609,25 +609,8 @@ def creditor_delete_debt(request, id):
         messages.error(request, "You can only delete debts where you are the creditor.")
         return redirect('myapp:creditor_dashboard')
     
-    # Only allow deletion of paid debts
-    if debt.status != 'paid':
-        messages.error(request, "You can only delete debts that are fully paid.")
-        return redirect('myapp:creditor_dashboard')
-    
-    if request.method == 'POST':
-        debtor = debt.debtor
-        debt_amount = debt.amount
-        debt.delete()
-        
-        Notification.objects.create(
-            user=debtor,
-            notification_type='debt_deleted',
-            message=f'Creditor {request.user.full_name} has deleted a paid debt of ₱{debt_amount:.2f} from your records.'
-        )
-        
-        messages.success(request, 'Paid debt deleted successfully.')
-        return redirect('myapp:creditor_dashboard')
-    
+    # Deletion of paid debts has been disabled by design
+    messages.info(request, "Deleting paid debts has been disabled. Records are kept for tracking.")
     return redirect('myapp:creditor_dashboard')
 
 
