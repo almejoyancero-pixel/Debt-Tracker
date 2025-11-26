@@ -8,8 +8,13 @@ def remove_hidden_from_creditor_field(apps, schema_editor):
     Remove hidden_from_creditor field from myapp_debt table if it exists.
     This handles the case where the field exists in production but not in development.
     """
+    # This migration was written specifically for SQLite to recreate the table.
+    # On PostgreSQL (Render), running SQLite pragmas will fail, so we skip.
+    if connection.vendor != 'sqlite':
+        return
+
     with connection.cursor() as cursor:
-        # Check if the column exists
+        # Check if the column exists (SQLite pragma)
         cursor.execute("""
             SELECT COUNT(*) 
             FROM pragma_table_info('myapp_debt') 
