@@ -256,8 +256,8 @@ def creditor_dashboard(request):
     
     search_query = request.GET.get('q', '').strip()
     
-    # Get all debts for this creditor (excluding hidden ones)
-    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor')
+    # Get all debts for this creditor (temporarily excluding hidden filter until migration applied to production)
+    debts = Debt.objects.filter(creditor=request.user).select_related('debtor')
     
     if search_query:
         debts = debts.filter(
@@ -615,11 +615,17 @@ def creditor_delete_debt(request, id):
         return redirect('myapp:creditor_dashboard')
     
     if request.method == 'POST':
-        # Soft delete - hide from creditor dashboard but keep records
-        debt.hidden_from_creditor = True
-        debt.save()
-        
-        messages.success(request, 'Paid debt removed from your dashboard. Records remain in payment history.')
+        # Try soft delete if field exists, otherwise use hard delete as fallback
+        try:
+            debt.hidden_from_creditor = True
+            debt.save()
+            messages.success(request, 'Paid debt removed from your dashboard. Records remain in payment history.')
+        except AttributeError:
+            # Field doesn't exist yet, use hard delete as fallback
+            debtor = debt.debtor
+            debt_amount = debt.amount
+            debt.delete()
+            messages.success(request, 'Paid debt deleted successfully.')
         return redirect('myapp:creditor_dashboard')
     
     return redirect('myapp:creditor_dashboard')
@@ -758,7 +764,7 @@ def all_debts_view(request):
         messages.error(request, "Only creditors can view all debts.")
         return redirect('myapp:home')
     
-    debts = Debt.objects.filter(creditor=request.user, hidden_from_creditor=False).select_related('debtor').order_by('debtor__full_name', '-date_created')
+    debts = Debt.objects.filter(creditor=request.user).select_related('debtor').order_by('debtor__full_name', '-date_created')
     
     # Group by debtor
     debtors_dict = {}
