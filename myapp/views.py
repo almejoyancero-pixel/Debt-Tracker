@@ -615,17 +615,12 @@ def creditor_delete_debt(request, id):
         return redirect('myapp:creditor_dashboard')
     
     if request.method == 'POST':
-        # Try soft delete if field exists, otherwise use hard delete as fallback
-        try:
-            debt.hidden_from_creditor = True
-            debt.save()
-            messages.success(request, 'Paid debt removed from your dashboard. Records remain in payment history.')
-        except AttributeError:
-            # Field doesn't exist yet, use hard delete as fallback
-            debtor = debt.debtor
-            debt_amount = debt.amount
-            debt.delete()
-            messages.success(request, 'Paid debt deleted successfully.')
+        # For now, use hard delete since hidden_from_creditor field is commented out for production
+        # After migration is applied, this will be changed to soft delete
+        debtor = debt.debtor
+        debt_amount = debt.amount
+        debt.delete()
+        messages.success(request, 'Paid debt deleted successfully.')
         return redirect('myapp:creditor_dashboard')
     
     return redirect('myapp:creditor_dashboard')
